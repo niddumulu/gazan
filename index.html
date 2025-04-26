@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ga-zan</title>
+  <style>
+    /* Global Settings */
+    body {
+      margin: 0;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: #f7f7f7;
+      color: #333;
+      line-height: 1.6;
+      scroll-behavior: smooth;
+    }
+
+    header {
+      background: white;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      border-bottom: 1px solid #e0e0e0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+    }
+
+    header .logo {
+      font-weight: bold;
+      font-size: 24px;
+      color: #e31337;
+      letter-spacing: 1px;
+    }
+
+    header nav a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      transition: color 0.3s ease;
+      font-size: 16px;
+    }
+
+    header nav a:hover {
+      color: #e31337;
+    }
+
+    /* Form Inputs for Username and Posting Key */
+    header form {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    header input[type="text"], header input[type="password"] {
+      padding: 6px 12px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #fff;
+      width: 300px;  /* Lebar input untuk Posting Key */
+    }
+
+    header button {
+      padding: 6px 12px;
+      background-color: #e31337;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    header button:hover {
+      background-color: #b10e2e;
+    }
+
+    /* Container Layout */
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      grid-gap: 40px;
+      margin-top: 65px;
+      padding: 20px;
+    }
+
+    .left-sidebar,
+    .right-sidebar {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .left-sidebar {
+      height: fit-content;
+    }
+
+    .right-sidebar {
+      position: sticky;
+      top: 80px;
+      height: fit-content;
+    }
+
+    .sidebar-link {
+      display: block;
+      color: #333;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: color 0.3s ease;
+    }
+
+    .sidebar-link:hover {
+      color: #e31337;
+    }
+
+    /* Main Content */
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex-grow: 1;
+    }
+
+    .articles__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .articles__h1 {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .articles__header select {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    .post {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      transition: box-shadow 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .post:hover {
+      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: #777;
+    }
+
+    .user__col {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user__name {
+      font-size: 16px;
+    }
+
+    .Reputation {
+      color: #888;
+      font-size: 14px;
+    }
+
+    .articles__tag-link {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .timestamp__link {
+      font-size: 14px;
+      color: #777;
+    }
+
+    .post-header img {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+    }
+
+    .post-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .post-summary {
+      font-size: 15px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    /* Button Styling */
+    .btn {
+      padding: 8px 16px;
+      background-color: #e31337;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .btn:hover {
+      background-color: #b10e2e;
+    }
+
+    /* Iklan Sidebar */
+    .ad-sidebar {
+      background: #f0f0f0;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+      font-size: 16px;
+    }
+
+    .ad-sidebar a {
+      color: #e31337;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .ad-sidebar a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+      .left-sidebar, .right-sidebar {
+        position: static;
+        order: 2;
+        margin-bottom: 20px;
+      }
+      main {
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Ga-zan Blockchain Hive</div>
+  <form>
+    <input type="text" placeholder="Username" name="username" required>
+    <input type="password" placeholder="Posting Key" name="posting_key" required>
+    <button type="submit">Login</button>
+  </form>
+</header>
+
+<div class="container">
+  <!-- Sidebar Kiri -->
+  <aside class="left-sidebar">
+    <a href="#" class="sidebar-link">All posts</a>
+    <a href="#" class="sidebar-link">Trending Communities</a>
+    <a href="#" class="sidebar-link">Vibes</a>
+    <a href="#" class="sidebar-link">Worldmappin</a>
+    <a href="#" class="sidebar-link">HIVE CN 中文社区</a>
+    <a href="#" class="sidebar-link">Splinterlands</a>
+    <a href="#" class="sidebar-link">LeoFinance</a>
+    <a href="#" class="sidebar-link">Actifit</a>
+    <a href="#" class="sidebar-link">Olio di Balena</a>
+    <a href="#" class="sidebar-link">Talent Land</a>
+    <a href="#" class="sidebar-link">Photography Lovers</a>
+    <a href="#" class="sidebar-link">Lifestyle</a>
+    <a href="#" class="sidebar-link">Hive Gaming</a>
+    <a href="#" class="sidebar-link">Hive Learners</a>
+    <a href="#" class="sidebar-link">Explore communities...</a>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+    <div class="articles__header">
+      <div class="articles__h1">All posts</div>
+      <select>
+        <option value="Trending">Trending</option>
+        <option value="Hot">Hot</option>
+        <option value="New">New</option>
+        <option value="Payouts">Payouts</option>
+        <option value="Muted">Muted</option>
+      </select>
+    </div>
+
+    <!-- Post 1 -->
+    <a href="#" class="post">
+      <div class="post-header">
+        <div class="user__col">
+          <img src="https://randomuser.me/api/portraits/men/21.jpg" alt="User">
+          <span class="user__name">Topik</span>
+        </div>
+        <span class="timestamp__link">3 hours ago</span>
+      </div>
+      <div class="post-title">The Power of Blockchain in Decentralized Finance</div>
+      <p class="post-summary">Blockchain technology is revolutionizing finance by decentralizing financial systems, offering transparency and security...</p>
+    </a>
+
+    <!-- Post 2 -->
+    <a href="#" class="post">
+      <div class="post-header">
+        <div class="user__col">
+          <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="User">
+          <span class="user__name">Salsa</span>
+        </div>
+        <span class="timestamp__link">5 hours ago</span>
+      </div>
+      <div class="post-title">Exploring the Future of NFTs</div>
+      <p class="post-summary">Non-Fungible Tokens (NFTs) are changing the way we think about ownership in the digital world. But what does the future hold?</p>
+    </a>
+
+    <!-- More posts... -->
+	<!-- Post 3 -->
+<a href="#" class="post">
+  <div class="post-header">
+    <div class="user__col">
+      <img src="https://randomuser.me/api/portraits/men/12.jpg" alt="User">
+      <span class="user__name">Asep</span>
+    </div>
+    <span class="timestamp__link">2 hours ago</span>
+  </div>
+  <div class="post-title">Blockchain in Supply Chain Management</div>
+  <p class="post-summary">Blockchain technology is transforming the supply chain by providing transparency, reducing fraud, and improving efficiency in logistics...</p>
+</a>
+
+<!-- Post 4 -->
+<a href="#" class="post">
+  <div class="post-header">
+    <div class="user__col">
+      <img src="https://randomuser.me/api/portraits/women/22.jpg" alt="User">
+      <span class="user__name">Lulu</span>
+    </div>
+    <span class="timestamp__link">6 hours ago</span>
+  </div>
+  <div class="post-title">Decentralized Finance: The Future of Financial Freedom</div>
+  <p class="post-summary">DeFi is shaking up traditional financial systems by eliminating intermediaries and enabling users to have more control over their assets...</p>
+</a>
+
+  </main>
+
+  <!-- Sidebar Kanan dengan Iklan -->
+  <aside class="right-sidebar">
+    <div class="ad-sidebar">
+      <p>Ingin jadi developer di Hive Blockchain? <a href="https://hive.io">Gabung sekarang!</a></p>
+    </div>
+
+  </aside>
+</div>
+
+</body>
+</html>
