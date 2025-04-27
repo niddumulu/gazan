@@ -396,8 +396,10 @@ async function loadPosts(loadMore = false) {
       const cleanBody = post.body.replace(/(<([^>]+)>)/gi, "").replace(/\n/g, ' ').substring(0, 100);
       const postElement = document.createElement('a');
       postElement.className = 'post';
-      postElement.href = `https://hive.blog${post.url}`;
-      postElement.target = '_blank';
+      //postElement.href = `https://hive.blog${post.url}`;
+      postElement.href = `article.html?author=${post.author}&permlink=${post.permlink}`;
+
+	  //postElement.target = '_blank';
       postElement.innerHTML = `
         <div class="post-header">
           <div class="user__col">
