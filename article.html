@@ -118,6 +118,10 @@
       .article-title { font-size: 24px; }
       .article-container { margin: 20px 10px; padding: 20px; }
     }
+
+  .comment-button:hover {
+    background-color: #b10e2e;
+  }
   </style>
 </head>
 
@@ -134,6 +138,32 @@
   <img id="cover-image" class="cover-image" style="display:none;" alt="Cover Image">
   <div class="article-content" id="article-content"></div>
 </div>
+
+
+<!-- Comments Section -->
+<div class="comments-wrapper" id="comments-wrapper" style="display:none;">
+  <div class="comments-section">
+    
+    <!-- Tombol komentar -->
+    <a id="comment-button" href="#" class="comment-button" style="
+      display: inline-block;
+      padding: 12px 40px;
+      background-color: #e31337;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 18px;
+      transition: background-color 0.3s;
+    ">Tulis Komentar</a>
+
+    <h3>Komentar</h3>
+    <div id="comments-list"></div>
+  </div>
+</div>
+
+
+
 
 <!-- Comments Section -->
 <div class="comments-wrapper" id="comments-wrapper" style="display:none;">
@@ -195,6 +225,12 @@ async function loadDiscussion(author, permlink) {
   const data = await response.json();
   return data.result;
 }
+
+function getQueryParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
+
 
 // Render Comments
 function renderComments(comments, parentId, depth = 0) {
@@ -269,6 +305,19 @@ function renderComments(comments, parentId, depth = 0) {
     document.body.innerHTML += `<div class="error-message">Gagal memuat artikel. 🚫</div>`;
   }
 })();
+// Ambil parameter author dan permlink dari URL
+const author = getQueryParam('author');
+const permlink = getQueryParam('permlink');
+
+// Periksa apakah parameter author dan permlink ada
+if (author && permlink) {
+  // Temukan tombol komentar berdasarkan ID
+  const commentButton = document.getElementById('comment-button');
+  
+  // Ubah href tombol komentar dengan parameter yang benar
+  commentButton.href = `comment.html?author=${author}&permlink=${permlink}`;
+}
+
 </script>
 
 </body>
