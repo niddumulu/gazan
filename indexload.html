@@ -13,6 +13,7 @@
       line-height: 1.6;
       scroll-behavior: smooth;
     }
+
     header {
       background: #fff;
       height: 60px;
@@ -27,12 +28,14 @@
       right: 0;
       z-index: 10;
     }
+
     header .logo {
       font-weight: bold;
       font-size: 24px;
       color: #e31337;
       letter-spacing: 1px;
     }
+
     header nav a {
       margin-left: 20px;
       text-decoration: none;
@@ -41,14 +44,17 @@
       transition: color 0.3s;
       font-size: 16px;
     }
+
     header nav a:hover {
       color: #e31337;
     }
+
     header form {
       display: flex;
       gap: 10px;
       align-items: center;
     }
+
     header input[type="text"],
     header input[type="password"] {
       padding: 6px 12px;
@@ -58,6 +64,7 @@
       background: #fff;
       width: 300px;
     }
+
     header button {
       padding: 6px 12px;
       background: #e31337;
@@ -69,9 +76,11 @@
       font-size: 14px;
       font-weight: 600;
     }
+
     header button:hover {
       background: #b10e2e;
     }
+
     .container {
       display: grid;
       grid-template-columns: 1fr 2fr 1fr;
@@ -79,6 +88,7 @@
       margin-top: 80px;
       padding: 20px;
     }
+
     .left-sidebar, .right-sidebar {
       background: #fff;
       border-radius: 10px;
@@ -87,18 +97,33 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
     }
+
+    .left-sidebar:hover, .right-sidebar:hover {
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+
     .left-sidebar {
-      position: sticky;
-      top: 80px;
-      max-height: calc(100vh - 100px);
-      overflow-y: auto;
-    }
+  position: sticky;
+  top: 80px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+
     .right-sidebar {
       position: sticky;
       top: 80px;
       height: fit-content;
     }
+
     .sidebar-link {
       display: block;
       color: #333;
@@ -107,15 +132,18 @@
       font-size: 15px;
       transition: color 0.3s;
     }
+
     .sidebar-link:hover {
       color: #e31337;
     }
+
     main {
       display: flex;
       flex-direction: column;
       gap: 20px;
       min-width: 0;
     }
+
     .articles__header {
       display: flex;
       justify-content: space-between;
@@ -124,11 +152,13 @@
       padding-bottom: 10px;
       margin-bottom: 20px;
     }
+
     .articles__h1 {
       font-size: 22px;
       font-weight: bold;
       color: #333;
     }
+
     .articles__header select {
       padding: 6px 12px;
       border-radius: 6px;
@@ -136,67 +166,77 @@
       background: #fff;
       font-size: 14px;
     }
+
     #post-container {
       display: flex;
       flex-direction: column;
       gap: 24px;
     }
+
     .post {
       background: #fff;
-      padding: 25px;
+      padding: 18px;
       border-radius: 10px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-      transition: box-shadow 0.3s;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
       word-break: break-word;
       overflow-wrap: anywhere;
     }
+
     .post:hover {
-      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      transform: translateY(-4px);
     }
+
     .post-header {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       font-size: 14px;
       color: #777;
       flex-wrap: wrap;
     }
-    .user__col {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .user__name {
-      font-size: 16px;
-    }
-    .timestamp__link {
-      font-size: 14px;
-      color: #777;
-    }
+
     .post-header img {
       width: 35px;
       height: 35px;
       border-radius: 50%;
     }
-    .post-title, .post-summary {
-      word-break: break-word;
-      overflow-wrap: anywhere;
+
+    .user__col {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+
+    .user__name {
+      font-size: 16px;
+    }
+
+    .timestamp__link {
+      font-size: 14px;
+      color: #777;
+    }
+
     .post-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       color: #222;
+      margin: 0;
     }
+
     .post-summary {
-      font-size: 15px;
+      font-size: 14px;
       color: #555;
-      line-height: 1.5;
+      line-height: 1.4;
+      margin: 0;
     }
+
     .ad-sidebar {
       background: #f0f0f0;
       padding: 15px;
@@ -204,15 +244,24 @@
       text-align: center;
       box-shadow: 0 3px 8px rgba(0,0,0,0.08);
       font-size: 16px;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
     }
+
+    .ad-sidebar:hover {
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+
     .ad-sidebar a {
       color: #e31337;
       font-weight: bold;
       text-decoration: none;
     }
+
     .ad-sidebar a:hover {
       text-decoration: underline;
     }
+
     #load-more-btn {
       margin: 20px auto 0;
       padding: 10px 20px;
@@ -225,9 +274,11 @@
       font-size: 16px;
       transition: background 0.3s;
     }
+
     #load-more-btn:hover {
       background: #b10e2e;
     }
+
     @media (max-width:768px) {
       .container {
         grid-template-columns: 1fr;
@@ -239,6 +290,14 @@
       }
       main {
         order: 1;
+      }
+    }
+
+    /* mobile: tap effect mirip hover */
+    @media (hover: none) {
+      .post:active, .left-sidebar:active, .right-sidebar:active, .ad-sidebar:active {
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
       }
     }
   </style>
@@ -275,8 +334,6 @@
         <option value="created">Newest</option>
         <option value="trending">Trending</option>
         <option value="hot">Hot</option>
-        <option value="payout">Payouts</option>
-        <option value="muted">Muted</option>
       </select>
     </div>
 
