@@ -135,9 +135,29 @@
 
   <div class="article-title" id="article-title">Loading...</div>
   <div class="article-meta" id="article-meta"></div>
+  
+  <!-- Tombol link Hive & Salin Artikel -->
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 10px 0 20px;">
+    <a id="hive-link"
+       href="#"
+       target="_blank"
+       style="background-color: #f5f5f5; color: #e31337; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; border: 2px solid #e31337;">
+      🔗 Lihat di Ecency
+    </a>
+
+    <button onclick="copyArticle()"
+       style="background-color: #e31337; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background-color 0.3s;">
+      📋 Salin Artikel
+    </button>
+  </div>
+
+  <!-- Gambar cover -->
   <img id="cover-image" class="cover-image" style="display:none;" alt="Cover Image">
+  
+  <!-- Isi artikel -->
   <div class="article-content" id="article-content"></div>
 </div>
+
 
 
 <!-- Comments Section -->
@@ -276,6 +296,15 @@ function renderComments(comments, parentId, depth = 0) {
     });
     const data = await response.json();
     const post = data.result;
+	
+	// Tampilkan link ke Hive
+	const hiveUrl = `https://ecency.com/@${author}/${permlink}`;
+	const hiveLink = document.getElementById('hive-link');
+	if (hiveLink) {
+	hiveLink.href = hiveUrl;
+	hiveLink.textContent = `🔗 Lihat di Ecency`;
+	}
+
 
     document.getElementById('loading-spinner').style.display = 'none';
     document.getElementById('article-container').style.display = 'block';
@@ -317,6 +346,24 @@ if (author && permlink) {
   // Ubah href tombol komentar dengan parameter yang benar
   commentButton.href = `comment.html?author=${author}&permlink=${permlink}`;
 }
+
+function copyArticle() {
+  const articleContent = document.getElementById('article-content');
+  if (!articleContent) return;
+
+  const tempTextarea = document.createElement('textarea');
+  tempTextarea.style.position = 'fixed';
+  tempTextarea.style.opacity = '0';
+  tempTextarea.value = articleContent.innerText;
+
+  document.body.appendChild(tempTextarea);
+  tempTextarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(tempTextarea);
+
+  alert('Artikel berhasil disalin ke clipboard!');
+}
+
 
 </script>
 
