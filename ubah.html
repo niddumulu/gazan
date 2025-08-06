@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ecency URL Converter</title>
+</head>
+<body>
+  <h2>Ecency URL Converter</h2>
+
+  <label for="originalUrl">Masukkan URL Ecency:</label><br>
+  <input type="text" id="originalUrl" size="100" placeholder="https://ecency.com/@egoaquiles/meeting-sebastian-through-fe-de-vida-espeng"><br><br>
+
+  <button onclick="convertURL()">Convert</button>
+
+  <h3>Hasil URL:</h3>
+  <p id="convertedUrl"></p>
+
+  <script>
+    function convertURL() {
+      const input = document.getElementById('originalUrl').value.trim();
+      const resultElement = document.getElementById('convertedUrl');
+
+      // Cek apakah URL mengandung "@"
+      const match = input.match(/@([^/]+)\/([^?#]+)/);
+
+      if (match) {
+        
+        const author = match[1];
+        const permlink = match[2];
+
+        const newUrl = `https://niddumulu.github.io/gazan/article.html?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
+        resultElement.innerHTML = `<a href="${newUrl}" target="_blank">${newUrl}</a>`;
+      } else {
+        resultElement.textContent = "URL tidak valid atau tidak sesuai format Ecency.";
+      }
+    }
+  </script>
+</body>
+</html>
