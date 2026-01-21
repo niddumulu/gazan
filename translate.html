@@ -1,28 +1,30 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Translator EN → ID</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-    }
-    textarea {
-      width: 100%;
-      height: 120px;
-      margin-bottom: 10px;
-      padding: 10px;
-    }
-    button {
-      padding: 10px 15px;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Translator EN → ID</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+}
+textarea {
+  width: 100%;
+  height: 120px;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+button {
+  padding: 10px;
+  width: 100%;
+}
+</style>
 </head>
+
 <body>
 
 <h2>Translate English → Indonesia</h2>
@@ -30,33 +32,43 @@
 <textarea id="inputText" placeholder="Enter English text..."></textarea>
 <button onclick="translateText()">Translate</button>
 
-<h3>Hasil Terjemahan:</h3>
-<textarea id="outputText" readonly></textarea>
+<textarea id="outputText" placeholder="Hasil terjemahan..." readonly></textarea>
 
 <script>
 async function translateText() {
-  const text = document.getElementById("inputText").value;
+  const input = document.getElementById("inputText").value;
+  const output = document.getElementById("outputText");
 
-  if (!text.trim()) {
-    alert("Masukkan teks terlebih dahulu");
+  if (!input.trim()) {
+    alert("Masukkan teks dulu");
     return;
   }
 
-  const response = await fetch("https://libretranslate.de/translate", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      q: text,
-      source: "en",
-      target: "id",
-      format: "text"
-    })
-  });
+  output.value = "Menerjemahkan...";
 
-  const data = await response.json();
-  document.getElementById("outputText").value = data.translatedText;
+  try {
+    const res = await fetch("https://libretranslate.com/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        q: input,
+        source: "en",
+        target: "id",
+        format: "text"
+      })
+    });
+
+    if (!res.ok) throw new Error("Server error");
+
+    const data = await res.json();
+    output.value = data.translatedText;
+
+  } catch (err) {
+    output.value = "Gagal menerjemahkan (API diblokir / offline)";
+    console.error(err);
+  }
 }
 </script>
 
