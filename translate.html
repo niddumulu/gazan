@@ -17,10 +17,13 @@ textarea {
   height: 120px;
   margin-bottom: 10px;
   padding: 10px;
+  font-size: 14px;
 }
 button {
-  padding: 10px;
+  padding: 12px;
   width: 100%;
+  font-size: 16px;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -30,6 +33,7 @@ button {
 <h2>Translate English → Indonesia</h2>
 
 <textarea id="inputText" placeholder="Enter English text..."></textarea>
+
 <button onclick="translateText()">Translate</button>
 
 <textarea id="outputText" placeholder="Hasil terjemahan..." readonly></textarea>
@@ -47,27 +51,30 @@ async function translateText() {
   output.value = "Menerjemahkan...";
 
   try {
-    const res = await fetch("https://libretranslate.com/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        q: input,
-        source: "en",
-        target: "id",
-        format: "text"
-      })
-    });
+    const res = await fetch(
+      "https://blue-moon-af9e.kangulumuddin.workers.dev/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          q: input,
+          source: "en",
+          target: "id",
+          format: "text"
+        })
+      }
+    );
 
-    if (!res.ok) throw new Error("Server error");
+    if (!res.ok) throw new Error("HTTP error");
 
     const data = await res.json();
     output.value = data.translatedText;
 
   } catch (err) {
-    output.value = "Gagal menerjemahkan (API diblokir / offline)";
     console.error(err);
+    output.value = "Gagal menerjemahkan";
   }
 }
 </script>
