@@ -1,53 +1,104 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Translate EN ke ID</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Translate Popup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 10px;
-    }
-    textarea {
-      width: 100%;
-      height: 140px;
-      padding: 10px;
-      font-size: 14px;
-    }
-    button {
-      margin-top: 10px;
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+/* Tombol buka popup */
+.open-btn {
+  padding: 12px;
+  font-size: 16px;
+  width: 100%;
+}
+
+/* Overlay */
+.popup {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 999;
+}
+
+/* Box popup */
+.popup-content {
+  background: #fff;
+  width: 90%;
+  max-width: 400px;
+  margin: 15% auto;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+/* Close */
+.close {
+  text-align: right;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+textarea {
+  width: 100%;
+  height: 120px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 16px;
+}
+</style>
 </head>
 
 <body>
 
-<h2>Translate English → Indonesia</h2>
+<button class="open-btn" onclick="openPopup()">Translate</button>
 
-<form
-  action="https://translate.google.com/"
-  method="get"
-  target="_blank">
+<!-- POPUP -->
+<div class="popup" id="popup">
+  <div class="popup-content">
+    <div class="close" onclick="closePopup()">✖</div>
 
-  <textarea
-    name="text"
-    placeholder="Enter English text here..."
-    required></textarea>
+    <h3>Translate English → Indonesia</h3>
 
-  <input type="hidden" name="sl" value="en">
-  <input type="hidden" name="tl" value="id">
-  <input type="hidden" name="op" value="translate">
+    <form
+      action="https://translate.google.com/"
+      method="get"
+      target="_blank">
 
-  <button type="submit">Translate</button>
-</form>
+      <textarea
+        name="text"
+        placeholder="Enter English text..."
+        required></textarea>
+
+      <input type="hidden" name="sl" value="en">
+      <input type="hidden" name="tl" value="id">
+      <input type="hidden" name="op" value="translate">
+
+      <button type="submit">Terjemahkan</button>
+    </form>
+
+  </div>
+</div>
+
+<script>
+function openPopup() {
+  document.getElementById("popup").style.display = "block";
+}
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+</script>
 
 </body>
 </html>
