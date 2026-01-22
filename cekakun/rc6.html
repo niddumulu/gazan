@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Hive RC – PeakD Final FIX</title>
+<title>Hive Account Info (Stable)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{
@@ -56,7 +56,7 @@ small{opacity:.7}
 </head>
 <body>
 
-<h1>Hive Account (PeakD Accurate)</h1>
+<h1>Hive Account (Stable RC)</h1>
 
 <input id="user" placeholder="username hive">
 <button onclick="cek()">Cek</button>
@@ -66,18 +66,16 @@ small{opacity:.7}
 <script>
 let rcInterval=null;
 
-function num(v){
-  return parseFloat(v.split(" ")[0]);
-}
+function num(v){ return parseFloat(v.split(" ")[0]); }
 
 async function rpc(method, params){
   const res = await fetch("https://api.hive.blog",{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
       jsonrpc:"2.0",
-      method: method,
-      params: params,
+      method,
+      params,
       id:1
     })
   });
@@ -89,14 +87,13 @@ async function rpc(method, params){
 async function cek(){
   if(rcInterval) clearInterval(rcInterval);
 
-  const username = document.getElementById("user").value.trim().toLowerCase();
-  if(!username) return;
+  const u = document.getElementById("user").value.trim().toLowerCase();
+  if(!u) return;
 
   try{
-    const [acc, global, rcData] = await Promise.all([
-      rpc("condenser_api.get_accounts", [[username]]),
-      rpc("condenser_api.get_dynamic_global_properties", []),
-      rpc("rc_api.find_rc_accounts", [{ accounts:[username] }])
+    const [acc, global] = await Promise.all([
+      rpc("condenser_api.get_accounts", [[u]]),
+      rpc("condenser_api.get_dynamic_global_properties", [])
     ]);
 
     if(!acc || !acc[0]){
@@ -104,43 +101,41 @@ async function cek(){
       return;
     }
 
-    const data = acc[0];
-    const rcAcc = rcData.rc_accounts[0];
+    const a = acc[0];
 
-    const vests = num(data.vesting_shares);
+    const vests = num(a.vesting_shares);
     const hp =
       vests *
       num(global.total_vesting_fund_hive) /
       num(global.total_vesting_shares);
 
-    const maxMana = rcAcc.max_rc;
-    const baseMana = rcAcc.rc_manabar.current_mana;
-    const last = rcAcc.rc_manabar.last_update_time;
+    const maxRC_UI = hp * 1700;
+    const maxRC_RAW = maxRC_UI * 1e6;
+
+    const last = Math.floor(Date.now()/1000);
     const regenSeconds = 432000;
 
     function render(){
       const now = Math.floor(Date.now()/1000);
       const elapsed = now - last;
-      const regen = (maxMana / regenSeconds) * elapsed;
-      const current = Math.min(maxMana, baseMana + regen);
-      const percent = (current / maxMana) * 100;
+      const regen = (maxRC_RAW / regenSeconds) * elapsed;
+      const current = Math.min(maxRC_RAW, maxRC_RAW + regen);
+      const percent = (current / maxRC_RAW) * 100;
 
       document.getElementById("ui").innerHTML = `
         <div class="card">
-          <h2>@${data.name}</h2>
-          <small>Dibuat: ${new Date(data.created).toLocaleString()}</small>
+          <h2>@${a.name}</h2>
+          <small>Dibuat: ${new Date(a.created).toLocaleString()}</small>
         </div>
 
         <div class="card">
-          <div class="label">Resource Credits</div>
+          <div class="label">Resource Credits (Estimasi Stabil)</div>
           <div class="bar">
             <div class="fill" style="width:${percent.toFixed(2)}%"></div>
           </div>
           <small>
-            Available: ${current.toLocaleString()} RC<br>
-            Total: ${maxMana.toLocaleString()} RC<br>
-            UI RC: ${(current/1e6).toFixed(0)} / ${(maxMana/1e6).toFixed(0)}
-            (${percent.toFixed(2)}%)
+            UI RC: ${(current/1e6).toFixed(0)} / ${(maxRC_RAW/1e6).toFixed(0)}<br>
+            RAW: ${Math.floor(current).toLocaleString()}
           </small>
         </div>
 
@@ -151,15 +146,15 @@ async function cek(){
           </div>
           <div class="item">
             <div class="label">VESTS</div>
-            <div class="value">${data.vesting_shares}</div>
+            <div class="value">${a.vesting_shares}</div>
           </div>
           <div class="item">
             <div class="label">HIVE</div>
-            <div class="value">${data.balance}</div>
+            <div class="value">${a.balance}</div>
           </div>
           <div class="item">
             <div class="label">HBD</div>
-            <div class="value">${data.hbd_balance}</div>
+            <div class="value">${a.hbd_balance}</div>
           </div>
         </div>
       `;
@@ -170,8 +165,7 @@ async function cek(){
 
   }catch(e){
     console.error(e);
-    document.getElementById("ui").innerHTML =
-      "Gagal mengambil data Hive (RC API)";
+    document.getElementById("ui").innerHTML="Gagal mengambil data Hive";
   }
 }
 </script>
