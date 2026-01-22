@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Hive RC Viewer (PeakD Accurate)</title>
+<title>Hive RC Viewer (Accurate)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{
@@ -11,7 +11,6 @@ body{
   color:#e5e7eb;
   padding:20px
 }
-h1{margin-bottom:10px}
 input,button{
   padding:10px;
   font-size:16px;
@@ -74,10 +73,6 @@ small{opacity:.7}
 <script>
 let timer=null;
 
-function parseAmount(v){
-  return parseFloat(v.split(" ")[0]);
-}
-
 async function rpc(method, params){
   const r = await fetch("https://api.hive.blog",{
     method:"POST",
@@ -89,7 +84,9 @@ async function rpc(method, params){
       params
     })
   });
-  return (await r.json()).result;
+  const j = await r.json();
+  if(j.error) throw j.error;
+  return j.result;
 }
 
 async function cek(){
@@ -99,13 +96,14 @@ async function cek(){
   ui.innerHTML="";
 
   try{
-    const [acc] = await rpc("condenser_api.get_accounts",[[u]]);
-    if(!acc){
+    const accs = await rpc("condenser_api.get_accounts",[[u]]);
+    if(!accs.length){
       ui.innerHTML='<div class="error">Akun tidak ditemukan</div>';
       return;
     }
+    const acc = accs[0];
 
-    const rcData = await rpc("rc_api.find_rc_accounts",[[u]]);
+    const rcData = await rpc("rc_api.find_rc_accounts",{accounts:[u]});
     const rc = rcData.rc_accounts[0];
 
     function render(){
@@ -130,29 +128,10 @@ async function cek(){
         </div>
 
         <div class="card grid">
-          <div class="item">
-            <div class="label">Hive Power (HP)</div>
-            <div class="value">${parseAmount(acc.vesting_shares).toLocaleString()} VESTS</div>
-          </div>
-          <div class="item">
-            <div class="label">Delegated Out</div>
-            <div class="value">${acc.delegated_vesting_shares}</div>
-          </div>
-          <div class="item">
-            <div class="label">Delegated In</div>
-            <div class="value">${acc.received_vesting_shares}</div>
-          </div>
-          <div class="item">
-            <div class="label">Effective RC Source</div>
-            <div class="value">On-chain rc_api</div>
-          </div>
-        </div>
-
-        <div class="card grid">
           <div class="item"><div class="label">HIVE</div><div class="value">${acc.balance}</div></div>
           <div class="item"><div class="label">HBD</div><div class="value">${acc.hbd_balance}</div></div>
-          <div class="item"><div class="label">Savings HBD</div><div class="value">${acc.savings_hbd_balance}</div></div>
-          <div class="item"><div class="label">Savings HIVE</div><div class="value">${acc.savings_balance}</div></div>
+          <div class="item"><div class="label">VESTS</div><div class="value">${acc.vesting_shares}</div></div>
+          <div class="item"><div class="label">RC Source</div><div class="value">On-chain rc_api</div></div>
         </div>
       `;
     }
