@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Hive RC – PeakD Final</title>
+<title>Hive RC – PeakD Final FIX</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{
@@ -65,7 +65,10 @@ small{opacity:.7}
 
 <script>
 let rcInterval=null;
-function num(v){ return parseFloat(v.split(" ")[0]); }
+
+function num(v){
+  return parseFloat(v.split(" ")[0]);
+}
 
 async function rpc(method, params){
   const res = await fetch("https://api.hive.blog",{
@@ -73,12 +76,14 @@ async function rpc(method, params){
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
       jsonrpc:"2.0",
-      method,
-      params,
+      method: method,
+      params: params,
       id:1
     })
   });
-  return (await res.json()).result;
+  const json = await res.json();
+  if(json.error) throw json.error;
+  return json.result;
 }
 
 async function cek(){
@@ -91,7 +96,7 @@ async function cek(){
     const [acc, global, rcData] = await Promise.all([
       rpc("condenser_api.get_accounts", [[username]]),
       rpc("condenser_api.get_dynamic_global_properties", []),
-      rpc("rc_api.find_rc_accounts", [[username]])
+      rpc("rc_api.find_rc_accounts", [{ accounts:[username] }])
     ]);
 
     if(!acc || !acc[0]){
@@ -100,14 +105,17 @@ async function cek(){
     }
 
     const data = acc[0];
-    const rc = rcData.rc_accounts[0];
+    const rcAcc = rcData.rc_accounts[0];
 
     const vests = num(data.vesting_shares);
-    const hp = vests * num(global.total_vesting_fund_hive) / num(global.total_vesting_shares);
+    const hp =
+      vests *
+      num(global.total_vesting_fund_hive) /
+      num(global.total_vesting_shares);
 
-    const maxMana = rc.max_rc;
-    const baseMana = rc.rc_manabar.current_mana;
-    const last = rc.rc_manabar.last_update_time;
+    const maxMana = rcAcc.max_rc;
+    const baseMana = rcAcc.rc_manabar.current_mana;
+    const last = rcAcc.rc_manabar.last_update_time;
     const regenSeconds = 432000;
 
     function render(){
@@ -131,15 +139,28 @@ async function cek(){
           <small>
             Available: ${current.toLocaleString()} RC<br>
             Total: ${maxMana.toLocaleString()} RC<br>
-            UI RC: ${(current/1e6).toFixed(0)} / ${(maxMana/1e6).toFixed(0)} (${percent.toFixed(2)}%)
+            UI RC: ${(current/1e6).toFixed(0)} / ${(maxMana/1e6).toFixed(0)}
+            (${percent.toFixed(2)}%)
           </small>
         </div>
 
         <div class="card grid">
-          <div class="item"><div class="label">Hive Power</div><div class="value">${hp.toFixed(3)} HP</div></div>
-          <div class="item"><div class="label">VESTS</div><div class="value">${data.vesting_shares}</div></div>
-          <div class="item"><div class="label">HIVE</div><div class="value">${data.balance}</div></div>
-          <div class="item"><div class="label">HBD</div><div class="value">${data.hbd_balance}</div></div>
+          <div class="item">
+            <div class="label">Hive Power</div>
+            <div class="value">${hp.toFixed(3)} HP</div>
+          </div>
+          <div class="item">
+            <div class="label">VESTS</div>
+            <div class="value">${data.vesting_shares}</div>
+          </div>
+          <div class="item">
+            <div class="label">HIVE</div>
+            <div class="value">${data.balance}</div>
+          </div>
+          <div class="item">
+            <div class="label">HBD</div>
+            <div class="value">${data.hbd_balance}</div>
+          </div>
         </div>
       `;
     }
@@ -148,8 +169,9 @@ async function cek(){
     rcInterval = setInterval(render,1000);
 
   }catch(e){
-    document.getElementById("ui").innerHTML="Error mengambil data Hive API";
     console.error(e);
+    document.getElementById("ui").innerHTML =
+      "Gagal mengambil data Hive (RC API)";
   }
 }
 </script>
