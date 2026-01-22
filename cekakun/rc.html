@@ -2,72 +2,68 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Hive Account Viewer</title>
+<title>Hive RC + Effective HP + Cost Simulator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
-body {
-  font-family: system-ui, Arial;
-  background: #0f172a;
-  color: #e5e7eb;
-  padding: 20px;
+body{
+  font-family:system-ui,Arial;
+  background:#0f172a;
+  color:#e5e7eb;
+  padding:20px
 }
-input, button {
-  padding: 10px;
-  font-size: 16px;
+input,button{
+  padding:10px;
+  font-size:16px;
+  border-radius:8px;
+  border:none
 }
-.card {
-  background: #111827;
-  border-radius: 12px;
-  padding: 16px;
-  margin-top: 16px;
+button{
+  background:#22c55e;
+  color:#022c22;
+  cursor:pointer
 }
-h2 { margin: 0 0 8px }
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+.card{
+  background:#111827;
+  border-radius:14px;
+  padding:16px;
+  margin-top:16px
 }
-.item {
-  background: #1f2933;
-  padding: 10px;
-  border-radius: 8px;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px
 }
-.label {
-  font-size: 12px;
-  opacity: .7;
+.item{
+  background:#1f2937;
+  padding:12px;
+  border-radius:10px
 }
-.value {
-  font-size: 16px;
-  font-weight: bold;
+.label{
+  font-size:12px;
+  opacity:.7
 }
-.bar {
+.value{
+  font-size:18px;
+  font-weight:600
+}
+.bar{
   background:#020617;
   border-radius:10px;
   overflow:hidden;
   height:16px;
-  margin-top:6px;
+  margin-top:8px
 }
-.fill {
+.fill{
   height:100%;
-  background:linear-gradient(90deg,#22c55e,#4ade80);
+  background:linear-gradient(90deg,#22c55e,#4ade80)
 }
-small { opacity:.7 }
-details {
-  margin-top: 12px;
-}
-pre {
-  background:#020617;
-  padding:10px;
-  border-radius:8px;
-  overflow:auto;
-  font-size:12px;
-}
+small{opacity:.7}
+.error{color:#f87171;margin-top:12px}
 </style>
 </head>
 <body>
 
-<h1>Hive Account Checker</h1>
+<h1>Hive Account Analyzer</h1>
 
 <input id="user" placeholder="username hive">
 <button onclick="cek()">Cek</button>
@@ -75,89 +71,137 @@ pre {
 <div id="ui"></div>
 
 <script>
-function parseVests(v) {
-  return parseFloat(v.split(" ")[0]);
-}
+let timer=null;
 
-function hitungRC(data) {
-  const vests = parseVests(data.vesting_shares);
-  const maxMana = vests * 1e6;
-  const currentMana = data.voting_manabar.current_mana;
-  return Math.min(100, (currentMana / maxMana) * 100);
-}
-
-async function cek() {
-  const u = document.getElementById("user").value;
-  const res = await fetch("https://api.hive.blog", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
+async function rpc(method, params){
+  const r = await fetch("https://api.hive.blog",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
       jsonrpc:"2.0",
-      method:"condenser_api.get_accounts",
-      params:[[u]],
-      id:1
+      id:1,
+      method,
+      params
     })
   });
+  const j = await r.json();
+  if(j.error) throw j.error;
+  return j.result;
+}
 
-  const data = (await res.json()).result[0];
-  if(!data){
-    document.getElementById("ui").innerHTML = "Akun tidak ditemukan";
-    return;
+async function cek(){
+  if(timer) clearInterval(timer);
+  const u=document.getElementById("user").value.trim().toLowerCase();
+  const ui=document.getElementById("ui");
+  ui.innerHTML="";
+
+  try{
+    const accs = await rpc("condenser_api.get_accounts",[[u]]);
+    if(!accs.length){
+      ui.innerHTML='<div class="error">Akun tidak ditemukan</div>';
+      return;
+    }
+    const acc = accs[0];
+
+    const rcData = await rpc("rc_api.find_rc_accounts",{accounts:[u]});
+    const rc = rcData.rc_accounts[0];
+
+    const global = await rpc(
+      "condenser_api.get_dynamic_global_properties",
+      []
+    );
+
+    const totalVests = parseFloat(global.total_vesting_shares);
+    const totalFund = parseFloat(global.total_vesting_fund_hive);
+
+    const vestOwn = parseFloat(acc.vesting_shares);
+    const vestDelegated = parseFloat(acc.delegated_vesting_shares);
+    const vestReceived = parseFloat(acc.received_vesting_shares);
+
+    const vestEffective = vestOwn - vestDelegated + vestReceived;
+
+    const hp = vestOwn * totalFund / totalVests;
+    const effectiveHP = vestEffective * totalFund / totalVests;
+
+    function render(){
+      const now=Math.floor(Date.now()/1000);
+      const elapsed=now-rc.rc_manabar.last_update_time;
+      const regen=(rc.max_rc/432000)*elapsed;
+      const current=Math.min(rc.max_rc, rc.rc_manabar.current_mana + regen);
+      const percent=(current/rc.max_rc)*100;
+
+      const costComment = 2000000;
+      const costVote = 150000;
+      const costTransfer = 300000;
+
+      ui.innerHTML=`
+        <div class="card">
+          <h2>@${acc.name}</h2>
+          <small>Dibuat: ${new Date(acc.created).toLocaleString()}</small>
+        </div>
+
+        <div class="card">
+          <div class="label">Resource Credits (Realtime)</div>
+          <div class="bar">
+            <div class="fill" style="width:${percent.toFixed(2)}%"></div>
+          </div>
+          <small>${percent.toFixed(2)}% • ${Math.floor(current).toLocaleString()} / ${Math.floor(rc.max_rc).toLocaleString()} RC</small>
+        </div>
+
+        <div class="card grid">
+          <div class="item">
+            <div class="label">Hive Power (HP)</div>
+            <div class="value">${hp.toFixed(3)} HP</div>
+          </div>
+          <div class="item">
+            <div class="label">Effective HP (RC source)</div>
+            <div class="value">${effectiveHP.toFixed(3)} HP</div>
+          </div>
+          <div class="item">
+            <div class="label">VESTS</div>
+            <div class="value">${acc.vesting_shares}</div>
+          </div>
+          <div class="item">
+            <div class="label">Effective VESTS</div>
+            <div class="value">${vestEffective.toFixed(6)}</div>
+          </div>
+          <div class="item">
+            <div class="label">HIVE</div>
+            <div class="value">${acc.balance}</div>
+          </div>
+          <div class="item">
+            <div class="label">HBD</div>
+            <div class="value">${acc.hbd_balance}</div>
+          </div>
+        </div>
+
+        <div class="card grid">
+          <div class="item">
+            <div class="label">≈ Komentar / Post</div>
+            <div class="value">${Math.floor(current / costComment)}x</div>
+          </div>
+          <div class="item">
+            <div class="label">≈ Upvote</div>
+            <div class="value">${Math.floor(current / costVote)}x</div>
+          </div>
+          <div class="item">
+            <div class="label">≈ Transfer</div>
+            <div class="value">${Math.floor(current / costTransfer)}x</div>
+          </div>
+          <div class="item">
+            <div class="label">RC Regen / hari</div>
+            <div class="value">${Math.floor(rc.max_rc / 5).toLocaleString()}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    render();
+    timer=setInterval(render,1000);
+
+  }catch(e){
+    ui.innerHTML='<div class="error">Error mengambil data Hive</div>';
   }
-
-  const rc = hitungRC(data).toFixed(2);
-
-  document.getElementById("ui").innerHTML = `
-  <div class="card">
-    <h2>@${data.name}</h2>
-    <small>Dibuat: ${new Date(data.created).toLocaleString()}</small>
-  </div>
-
-  <!-- RC CARD -->
-  <div class="card">
-    <div class="label">Resource Credits (RC)</div>
-    <div class="bar">
-      <div class="fill" style="width:${rc}%"></div>
-    </div>
-    <small>${rc}% tersedia</small>
-  </div>
-
-  <!-- INFO GRID -->
-  <div class="card grid">
-    <div class="item">
-      <div class="label">HIVE</div>
-      <div class="value">${data.balance}</div>
-    </div>
-    <div class="item">
-      <div class="label">HBD</div>
-      <div class="value">${data.hbd_balance}</div>
-    </div>
-    <div class="item">
-      <div class="label">HP (VESTS)</div>
-      <div class="value">${data.vesting_shares}</div>
-    </div>
-    <div class="item">
-      <div class="label">Post</div>
-      <div class="value">${data.post_count}</div>
-    </div>
-    <div class="item">
-      <div class="label">Komentar</div>
-      <div class="value">${data.comment_count}</div>
-    </div>
-    <div class="item">
-      <div class="label">Vote Terakhir</div>
-      <div class="value">${new Date(data.last_vote_time).toLocaleString()}</div>
-    </div>
-  </div>
-
-  <!-- RAW JSON -->
-  <div class="card">
-    <details>
-      <summary>Data Teknis (JSON)</summary>
-      <pre>${JSON.stringify(data, null, 2)}</pre>
-    </details>
-  </div>
-  `;
 }
 </script>
 
