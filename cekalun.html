@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Mini Hive Explorer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: Arial; background:#111; color:#eee; padding:20px }
+input, button { padding:8px; }
+pre { background:#222; padding:10px; overflow:auto }
+</style>
+</head>
+<body>
+
+<h2>Hive Account Checker</h2>
+
+<input id="username" placeholder="username hive">
+<button onclick="cek()">Cek</button>
+
+<pre id="hasil"></pre>
+
+<script>
+async function cek() {
+  const user = document.getElementById("username").value;
+  const res = await fetch("https://api.hive.blog", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      jsonrpc:"2.0",
+      method:"condenser_api.get_accounts",
+      params:[[user]],
+      id:1
+    })
+  });
+
+  const data = await res.json();
+  document.getElementById("hasil").textContent =
+    JSON.stringify(data.result[0], null, 2);
+}
+</script>
+
+</body>
+</html>
