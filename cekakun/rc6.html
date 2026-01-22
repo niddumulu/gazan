@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Hive Account Info (Stable)</title>
+<title>Hive RC Viewer (PeakD Accurate)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{
@@ -11,14 +11,21 @@ body{
   color:#e5e7eb;
   padding:20px
 }
+h1{margin-bottom:10px}
 input,button{
   padding:10px;
-  font-size:16px
+  font-size:16px;
+  border-radius:8px;
+  border:none
 }
-button{cursor:pointer}
+button{
+  background:#22c55e;
+  color:#022c22;
+  cursor:pointer
+}
 .card{
   background:#111827;
-  border-radius:12px;
+  border-radius:14px;
   padding:16px;
   margin-top:16px
 }
@@ -28,35 +35,36 @@ button{cursor:pointer}
   gap:12px
 }
 .item{
-  background:#1f2933;
-  padding:10px;
-  border-radius:8px
+  background:#1f2937;
+  padding:12px;
+  border-radius:10px
 }
 .label{
   font-size:12px;
   opacity:.7
 }
 .value{
-  font-size:16px;
-  font-weight:bold
+  font-size:18px;
+  font-weight:600
 }
 .bar{
   background:#020617;
   border-radius:10px;
   overflow:hidden;
   height:16px;
-  margin-top:6px
+  margin-top:8px
 }
 .fill{
   height:100%;
   background:linear-gradient(90deg,#22c55e,#4ade80)
 }
 small{opacity:.7}
+.error{color:#f87171;margin-top:12px}
 </style>
 </head>
 <body>
 
-<h1>Hive Account (Stable RC)</h1>
+<h1>Hive RC Viewer</h1>
 
 <input id="user" placeholder="username hive">
 <button onclick="cek()">Cek</button>
@@ -64,108 +72,96 @@ small{opacity:.7}
 <div id="ui"></div>
 
 <script>
-let rcInterval=null;
+let timer=null;
 
-function num(v){ return parseFloat(v.split(" ")[0]); }
+function parseAmount(v){
+  return parseFloat(v.split(" ")[0]);
+}
 
 async function rpc(method, params){
-  const res = await fetch("https://api.hive.blog",{
+  const r = await fetch("https://api.hive.blog",{
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
       jsonrpc:"2.0",
+      id:1,
       method,
-      params,
-      id:1
+      params
     })
   });
-  const json = await res.json();
-  if(json.error) throw json.error;
-  return json.result;
+  return (await r.json()).result;
 }
 
 async function cek(){
-  if(rcInterval) clearInterval(rcInterval);
-
-  const u = document.getElementById("user").value.trim().toLowerCase();
-  if(!u) return;
+  if(timer) clearInterval(timer);
+  const u=document.getElementById("user").value.trim().toLowerCase();
+  const ui=document.getElementById("ui");
+  ui.innerHTML="";
 
   try{
-    const [acc, global] = await Promise.all([
-      rpc("condenser_api.get_accounts", [[u]]),
-      rpc("condenser_api.get_dynamic_global_properties", [])
-    ]);
-
-    if(!acc || !acc[0]){
-      document.getElementById("ui").innerHTML="Akun tidak ditemukan";
+    const [acc] = await rpc("condenser_api.get_accounts",[[u]]);
+    if(!acc){
+      ui.innerHTML='<div class="error">Akun tidak ditemukan</div>';
       return;
     }
 
-    const a = acc[0];
-
-    const vests = num(a.vesting_shares);
-    const hp =
-      vests *
-      num(global.total_vesting_fund_hive) /
-      num(global.total_vesting_shares);
-
-    const maxRC_UI = hp * 1700;
-    const maxRC_RAW = maxRC_UI * 1e6;
-
-    const last = Math.floor(Date.now()/1000);
-    const regenSeconds = 432000;
+    const rcData = await rpc("rc_api.find_rc_accounts",[[u]]);
+    const rc = rcData.rc_accounts[0];
 
     function render(){
-      const now = Math.floor(Date.now()/1000);
-      const elapsed = now - last;
-      const regen = (maxRC_RAW / regenSeconds) * elapsed;
-      const current = Math.min(maxRC_RAW, maxRC_RAW + regen);
-      const percent = (current / maxRC_RAW) * 100;
+      const now=Math.floor(Date.now()/1000);
+      const elapsed=now-rc.rc_manabar.last_update_time;
+      const regen=(rc.max_rc/432000)*elapsed;
+      const current=Math.min(rc.max_rc, rc.rc_manabar.current_mana + regen);
+      const percent=(current/rc.max_rc)*100;
 
-      document.getElementById("ui").innerHTML = `
+      ui.innerHTML=`
         <div class="card">
-          <h2>@${a.name}</h2>
-          <small>Dibuat: ${new Date(a.created).toLocaleString()}</small>
+          <h2>@${acc.name}</h2>
+          <small>Dibuat: ${new Date(acc.created).toLocaleString()}</small>
         </div>
 
         <div class="card">
-          <div class="label">Resource Credits (Estimasi Stabil)</div>
+          <div class="label">Resource Credits (Realtime)</div>
           <div class="bar">
             <div class="fill" style="width:${percent.toFixed(2)}%"></div>
           </div>
-          <small>
-            UI RC: ${(current/1e6).toFixed(0)} / ${(maxRC_RAW/1e6).toFixed(0)}<br>
-            RAW: ${Math.floor(current).toLocaleString()}
-          </small>
+          <small>${percent.toFixed(2)}% • ${Math.floor(current).toLocaleString()} / ${Math.floor(rc.max_rc).toLocaleString()} RC</small>
         </div>
 
         <div class="card grid">
           <div class="item">
-            <div class="label">Hive Power</div>
-            <div class="value">${hp.toFixed(3)} HP</div>
+            <div class="label">Hive Power (HP)</div>
+            <div class="value">${parseAmount(acc.vesting_shares).toLocaleString()} VESTS</div>
           </div>
           <div class="item">
-            <div class="label">VESTS</div>
-            <div class="value">${a.vesting_shares}</div>
+            <div class="label">Delegated Out</div>
+            <div class="value">${acc.delegated_vesting_shares}</div>
           </div>
           <div class="item">
-            <div class="label">HIVE</div>
-            <div class="value">${a.balance}</div>
+            <div class="label">Delegated In</div>
+            <div class="value">${acc.received_vesting_shares}</div>
           </div>
           <div class="item">
-            <div class="label">HBD</div>
-            <div class="value">${a.hbd_balance}</div>
+            <div class="label">Effective RC Source</div>
+            <div class="value">On-chain rc_api</div>
           </div>
+        </div>
+
+        <div class="card grid">
+          <div class="item"><div class="label">HIVE</div><div class="value">${acc.balance}</div></div>
+          <div class="item"><div class="label">HBD</div><div class="value">${acc.hbd_balance}</div></div>
+          <div class="item"><div class="label">Savings HBD</div><div class="value">${acc.savings_hbd_balance}</div></div>
+          <div class="item"><div class="label">Savings HIVE</div><div class="value">${acc.savings_balance}</div></div>
         </div>
       `;
     }
 
     render();
-    rcInterval = setInterval(render,1000);
+    timer=setInterval(render,1000);
 
   }catch(e){
-    console.error(e);
-    document.getElementById("ui").innerHTML="Gagal mengambil data Hive";
+    ui.innerHTML='<div class="error">Error mengambil data Hive</div>';
   }
 }
 </script>
