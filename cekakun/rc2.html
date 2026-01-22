@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Hive RC Realtime</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  font-family:system-ui,Arial;
+  background:#0f172a;
+  color:#e5e7eb;
+  padding:20px
+}
+input,button{
+  padding:10px;
+  font-size:16px
+}
+.card{
+  background:#111827;
+  border-radius:12px;
+  padding:16px;
+  margin-top:16px
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px
+}
+.item{
+  background:#1f2933;
+  padding:10px;
+  border-radius:8px
+}
+.label{
+  font-size:12px;
+  opacity:.7
+}
+.value{
+  font-size:16px;
+  font-weight:bold
+}
+.bar{
+  background:#020617;
+  border-radius:10px;
+  overflow:hidden;
+  height:16px;
+  margin-top:6px
+}
+.fill{
+  height:100%;
+  background:linear-gradient(90deg,#22c55e,#4ade80)
+}
+small{opacity:.7}
+</style>
+</head>
+<body>
+
+<h1>Hive Account RC Realtime</h1>
+
+<input id="user" placeholder="username hive">
+<button onclick="cek()">Cek</button>
+
+<div id="ui"></div>
+
+<script>
+let rcInterval=null;
+
+function parseVests(v){
+  return parseFloat(v.split(" ")[0]);
+}
+
+function hitungRCRealtime(data){
+  const vests=parseVests(data.vesting_shares);
+  const maxMana=vests*1e6;
+  const regenSeconds=432000;
+  let mana=data.voting_manabar.current_mana;
+  const last=data.voting_manabar.last_update_time;
+
+  function update(){
+    const now=Math.floor(Date.now()/1000);
+    const elapsed=now-last;
+    const regen=(maxMana/regenseconds)*elapsed;
+    const current=Math.min(maxMana,mana+regen);
+    const percent=Math.min(100,(current/maxMana)*100);
+    return {current,maxMana,percent};
+  }
+}
+
+function estimasiAktivitas(rc){
+  return {
+    post:Math.floor(rc/22),
+    komentar:Math.floor(rc/4),
+    upvote:Math.floor(rc/0.75),
+    transfer:Math.floor(rc/1.5)
+  };
+}
+
+async function cek(){
+  if(rcInterval) clearInterval(rcInterval);
+
+  const u=document.getElementById("user").value.trim().toLowerCase();
+  const res=await fetch("https://api.hive.blog",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      jsonrpc:"2.0",
+      method:"condenser_api.get_accounts",
+      params:[[u]],
+      id:1
+    })
+  });
+
+  const data=(await res.json()).result[0];
+  if(!data){
+    document.getElementById("ui").innerHTML="Akun tidak ditemukan";
+    return;
+  }
+
+  const vests=parseVests(data.vesting_shares);
+  const maxMana=vests*1e6;
+  let mana=data.voting_manabar.current_mana;
+  const last=data.voting_manabar.last_update_time;
+  const regenSeconds=432000;
+
+  function render(){
+    const now=Math.floor(Date.now()/1000);
+    const elapsed=now-last;
+    const regen=(maxMana/regenSeconds)*elapsed;
+    const current=Math.min(maxMana,mana+regen);
+    const rc=(current/maxMana)*100;
+    const est=estimasiAktivitas(rc);
+
+    document.getElementById("ui").innerHTML=`
+      <div class="card">
+        <h2>@${data.name}</h2>
+        <small>Dibuat: ${new Date(data.created).toLocaleString()}</small>
+      </div>
+
+      <div class="card">
+        <div class="label">Resource Credits (Realtime)</div>
+        <div class="bar">
+          <div class="fill" style="width:${rc.toFixed(2)}%"></div>
+        </div>
+        <small>${rc.toFixed(2)}%</small>
+      </div>
+
+      <div class="card grid">
+        <div class="item">
+          <div class="label">Post</div>
+          <div class="value">≈ ${est.post}x</div>
+        </div>
+        <div class="item">
+          <div class="label">Komentar</div>
+          <div class="value">≈ ${est.komentar}x</div>
+        </div>
+        <div class="item">
+          <div class="label">Upvote</div>
+          <div class="value">≈ ${est.upvote}x</div>
+        </div>
+        <div class="item">
+          <div class="label">Transfer</div>
+          <div class="value">≈ ${est.transfer}x</div>
+        </div>
+      </div>
+    `;
+  }
+
+  render();
+  rcInterval=setInterval(render,1000);
+}
+</script>
+
+</body>
+</html>
