@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Hive Account Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body {
+  font-family: system-ui, Arial;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 20px;
+}
+input, button {
+  padding: 10px;
+  font-size: 16px;
+}
+.card {
+  background: #111827;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+h2 { margin: 0 0 8px }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.item {
+  background: #1f2933;
+  padding: 10px;
+  border-radius: 8px;
+}
+.label {
+  font-size: 12px;
+  opacity: .7;
+}
+.value {
+  font-size: 16px;
+  font-weight: bold;
+}
+small { opacity:.6 }
+details {
+  margin-top: 12px;
+}
+pre {
+  background:#020617;
+  padding:10px;
+  border-radius:8px;
+  overflow:auto;
+  font-size:12px;
+}
+</style>
+</head>
+<body>
+
+<h1>Hive Account Checker</h1>
+
+<input id="user" placeholder="username hive">
+<button onclick="cek()">Cek</button>
+
+<div id="ui"></div>
+
+<script>
+async function cek() {
+  const u = document.getElementById("user").value;
+  const res = await fetch("https://api.hive.blog", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      jsonrpc:"2.0",
+      method:"condenser_api.get_accounts",
+      params:[[u]],
+      id:1
+    })
+  });
+
+  const data = (await res.json()).result[0];
+  if(!data){
+    document.getElementById("ui").innerHTML = "Akun tidak ditemukan";
+    return;
+  }
+
+  document.getElementById("ui").innerHTML = `
+  <div class="card">
+    <h2>@${data.name}</h2>
+    <small>Dibuat: ${new Date(data.created).toLocaleString()}</small>
+  </div>
+
+  <div class="card grid">
+    <div class="item">
+      <div class="label">HIVE</div>
+      <div class="value">${data.balance}</div>
+    </div>
+    <div class="item">
+      <div class="label">HBD</div>
+      <div class="value">${data.hbd_balance}</div>
+    </div>
+    <div class="item">
+      <div class="label">HP (VESTS)</div>
+      <div class="value">${data.vesting_shares}</div>
+    </div>
+    <div class="item">
+      <div class="label">Post</div>
+      <div class="value">${data.post_count}</div>
+    </div>
+    <div class="item">
+      <div class="label">Komentar</div>
+      <div class="value">${data.comment_count}</div>
+    </div>
+    <div class="item">
+      <div class="label">Vote Terakhir</div>
+      <div class="value">${new Date(data.last_vote_time).toLocaleString()}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Data Teknis (JSON)</summary>
+      <pre>${JSON.stringify(data, null, 2)}</pre>
+    </details>
+  </div>
+  `;
+}
+</script>
+
+</body>
+</html>
