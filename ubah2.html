@@ -1,117 +1,330 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ecency URL Converter</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Hive Batch Upvote</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 16px;
-    }
+<script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+<script>
+hive.api.setOptions({ url: 'https://api.hive.blog' });
+hive.config.set('address_prefix','STM');
+hive.config.set('chain_id','beeab0de00000000000000000000000000000000000000000000000000000000');
+</script>
 
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
+<style>
+* { box-sizing: border-box; }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+body {
+  margin: 0;
+  padding: 16px;
+  font-family: system-ui, sans-serif;
+  background: #f4f4f4;
+}
 
-    label {
-      font-size: 14px;
-      font-weight: bold;
-    }
+.container {
+  max-width: 480px;
+  margin: auto;
+  background: #fff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
 
-    input[type="text"] {
-      width: 100%;
-      padding: 12px;
-      margin-top: 8px;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
+h2 { text-align: center; margin-bottom: 12px; }
 
-    button {
-      width: 100%;
-      margin-top: 16px;
-      padding: 12px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      background: #4CAF50;
-      color: #fff;
-      cursor: pointer;
-    }
+.tools-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
 
-    button:hover {
-      background: #43a047;
-    }
+.tool-btn {
+  flex: 1;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
 
-    h3 {
-      margin-top: 20px;
-      font-size: 16px;
-    }
+.export { background: #e3f2fd; color: #1565c0; }
+.import { background: #e8f5e9; color: #2e7d32; }
 
-    #convertedUrl {
-      word-break: break-all;
-      background: #f0f0f0;
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 14px;
-    }
+label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
+}
 
-    a {
-      color: #0066cc;
-      text-decoration: none;
-    }
-  </style>
+input[type=text], input[type=password] {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.add-btn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  background: #4caf50;
+  color: #fff;
+  cursor: pointer;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f7f7f7;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.account input { transform: scale(1.2); }
+
+.account-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.status {
+  font-size: 12px;
+  color: #777;
+}
+
+.vote-btn {
+  margin-top: 16px;
+  width: 100%;
+  padding: 16px;
+  font-size: 17px;
+  font-weight: 800;
+  border-radius: 12px;
+  border: none;
+  background: #ff5722;
+  color: #fff;
+  cursor: pointer;
+}
+
+.progress-wrap {
+  margin-top: 14px;
+}
+
+.progress {
+  width: 100%;
+  height: 10px;
+  background: #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: #4caf50;
+  transition: width .3s;
+}
+
+.note {
+  font-size: 12px;
+  text-align: center;
+  margin-top: 8px;
+  color: #666;
+}
+</style>
 </head>
 
 <body>
-  <div class="container">
-    <h2>Ecency URL Converter</h2>
 
-    <label for="originalUrl">Masukkan URL Ecency:</label>
-    <input
-      type="text"
-      id="originalUrl"
-      placeholder="https://ecency.com/@egoaquiles/meeting-sebastian-through-fe-de-vida-espeng"
-    >
+<div class="container">
+<h2>Hive Batch Upvote</h2>
 
-    <button onclick="convertURL()">Convert</button>
+<div class="tools-bar">
+<button class="tool-btn export" onclick="exportAccounts()">Export</button>
+<button class="tool-btn import" onclick="document.getElementById('importFile').click()">Import</button>
+<input type="file" id="importFile" hidden onchange="importAccounts(event)">
+</div>
 
-    <h3>Hasil URL:</h3>
-    <p id="convertedUrl"></p>
-  </div>
+<label>Username</label>
+<input id="username" type="text">
 
-  <script>
-    function convertURL() {
-      const input = document.getElementById('originalUrl').value.trim();
-      const resultElement = document.getElementById('convertedUrl');
+<label>Posting Private Key</label>
+<input id="postingKey" type="password">
 
-      const match = input.match(/@([^/]+)\/([^?#]+)/);
+<button class="add-btn" onclick="addAccount()">Tambah Akun</button>
 
-      if (match) {
-        const author = match[1];
-        const permlink = match[2];
+<div id="accountList"></div>
 
-        const newUrl = `https://kiostembakau.github.io/hive/artikel.html?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
-        resultElement.innerHTML = `<a href="${newUrl}" target="_blank">${newUrl}</a>`;
-      } else {
-        resultElement.textContent = "URL tidak valid atau tidak sesuai format Ecency.";
-      }
+<label>Link Post Hive</label>
+<input id="postLink" type="text">
+
+<button class="vote-btn" onclick="voteAll()">Vote Semua Akun</button>
+
+<div class="progress-wrap">
+<div class="progress">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+<div id="globalStatus" class="note"></div>
+</div>
+
+<div class="note">Delay antar akun: ±3 detik</div>
+</div>
+
+<script>
+
+let accounts = JSON.parse(localStorage.getItem('hive_accounts') || '[]');
+const DELAY = 3000;
+
+function save(){
+  localStorage.setItem('hive_accounts', JSON.stringify(accounts));
+}
+
+function render(){
+  accountList.innerHTML = '';
+
+  accounts.forEach((a,i)=>{
+    accountList.innerHTML += `
+      <div class="account">
+        <input type="checkbox" checked data-i="${i}">
+        <div class="account-name">@${a.username}</div>
+        <div class="status" id="st-${i}">ready</div>
+      </div>`;
+  });
+}
+
+function addAccount(){
+
+  const user = username.value.trim();
+  const key = postingKey.value.trim();
+
+  if(!user || !key){
+    alert("Isi username & key");
+    return;
+  }
+
+  accounts.push({username:user, key:key});
+  save();
+  render();
+
+  username.value='';
+  postingKey.value='';
+}
+
+function exportAccounts(){
+  const blob = new Blob([JSON.stringify(accounts)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'hive-accounts.json';
+  a.click();
+}
+
+function importAccounts(e){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      accounts = JSON.parse(reader.result);
+      save();
+      render();
+    }catch{
+      alert("File tidak valid");
     }
-  </script>
+  };
+  reader.readAsText(e.target.files[0]);
+}
+
+/* ================= PARSER UNIVERSAL ================= */
+function parseHiveLink(url){
+  const match = url.match(/@([^/]+)\/([^/?#]+)/);
+  if(!match) return null;
+
+  return {
+    author: match[1],
+    permlink: match[2]
+  };
+}
+
+/* ================= VOTE ================= */
+async function voteAll(){
+
+  const link = postLink.value.trim();
+  if(!link){
+    alert("Link kosong");
+    return;
+  }
+
+  const parsed = parseHiveLink(link);
+
+  if(!parsed){
+    alert("Link tidak valid");
+    return;
+  }
+
+  const author = parsed.author;
+  const permlink = parsed.permlink;
+
+  const selected = [...document.querySelectorAll('.account input:checked')];
+
+  if(selected.length === 0){
+    alert("Tidak ada akun dipilih");
+    return;
+  }
+
+  let done = 0;
+
+  globalStatus.textContent = "broadcasting...";
+  progressBar.style.width = "0%";
+
+  for(const cb of selected){
+
+    const i = cb.dataset.i;
+    const acc = accounts[i];
+
+    document.getElementById(`st-${i}`).textContent = "broadcasting";
+
+    await new Promise(res=>{
+      hive.broadcast.vote(
+        acc.key,
+        acc.username,
+        author,
+        permlink,
+        10000,
+        function(err,result){
+
+          console.log(err,result);
+
+          document.getElementById(`st-${i}`).textContent =
+            err ? "failed" : "success";
+
+          done++;
+
+          progressBar.style.width =
+            Math.round(done/selected.length*100)+"%";
+
+          setTimeout(res, DELAY);
+        }
+      );
+    });
+
+  }
+
+  globalStatus.textContent = "done";
+}
+
+render();
+
+</script>
+
 </body>
 </html>
