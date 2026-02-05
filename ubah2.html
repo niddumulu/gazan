@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecency URL Converter</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background: #4CAF50;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #43a047;
+    }
+
+    h3 {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    #convertedUrl {
+      word-break: break-all;
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Ecency URL Converter</h2>
+
+    <label for="originalUrl">Masukkan URL Ecency:</label>
+    <input
+      type="text"
+      id="originalUrl"
+      placeholder="https://ecency.com/@egoaquiles/meeting-sebastian-through-fe-de-vida-espeng"
+    >
+
+    <button onclick="convertURL()">Convert</button>
+
+    <h3>Hasil URL:</h3>
+    <p id="convertedUrl"></p>
+  </div>
+
+  <script>
+    function convertURL() {
+      const input = document.getElementById('originalUrl').value.trim();
+      const resultElement = document.getElementById('convertedUrl');
+
+      const match = input.match(/@([^/]+)\/([^?#]+)/);
+
+      if (match) {
+        const author = match[1];
+        const permlink = match[2];
+
+        const newUrl = `https://kiostembakau.github.io/hive/artikel.html?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
+        resultElement.innerHTML = `<a href="${newUrl}" target="_blank">${newUrl}</a>`;
+      } else {
+        resultElement.textContent = "URL tidak valid atau tidak sesuai format Ecency.";
+      }
+    }
+  </script>
+</body>
+</html>
