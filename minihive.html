@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hive Mini Reader</title>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+
+body{
+font-family:system-ui;
+background:#f2f4f8;
+margin:0;
+padding:12px;
+}
+
+.meta{
+font-size:13px;
+color:#6b7280;
+margin-top:4px;
+}
+
+.container{
+max-width:640px;
+margin:auto;
+}
+
+h1{
+color:#1f2937;
+margin-bottom:12px;
+}
+
+ul{
+list-style:none;
+padding:0;
+}
+
+li{
+background:#fff;
+padding:12px;
+margin-bottom:8px;
+border-radius:8px;
+cursor:pointer;
+display:flex;
+justify-content:space-between;
+align-items:center;
+transition:.2s;
+}
+
+li:hover{
+background:#2563eb;
+color:#fff;
+}
+
+.meta{
+font-size:13px;
+color:#6b7280;
+}
+
+button{
+margin-top:12px;
+padding:10px 14px;
+border:none;
+border-radius:8px;
+background:#ef4444;
+color:#fff;
+cursor:pointer;
+font-weight:600;
+width:100%;
+}
+
+.post-card{
+background:#fff;
+padding:16px;
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,.08);
+margin-bottom:16px;
+}
+
+img{
+max-width:100%;
+border-radius:8px;
+margin:10px 0;
+}
+
+.comment{
+background:#f9fafb;
+border-radius:10px;
+padding:10px;
+margin-bottom:8px;
+border:1px solid #e5e7eb;
+}
+
+.comment-author{
+font-weight:600;
+color:#2563eb;
+}
+
+a{
+color:#2563eb;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Hive Mini Reader</h1>
+
+<div id="content"></div>
+
+<button id="loadMore">Load More</button>
+
+</div>
+
+<script>
+
+let startAuthor="";
+let startPermlink="";
+let currentSort="created";
+let posts=[];
+
+const content=document.getElementById("content");
+
+/* ROUTER */
+
+function getRoute(){
+
+const hash=location.hash.replace("#","");
+
+if(!hash) return {type:"home"};
+
+const parts=hash.split("/");
+
+if(parts.length===2){
+
+return{
+type:"post",
+author:parts[0],
+permlink:parts[1]
+};
+
+}
+
+return {type:"home"};
+
+}
+
+/* FETCH POSTS */
+
+async function loadPosts(){
+
+const params={tag:"",limit:10};
+
+if(startAuthor){
+
+params.start_author=startAuthor;
+params.start_permlink=startPermlink;
+
+}
+
+try{
+
+const res=await fetch("https://api.hive.blog",{
+method:"POST",
+body:JSON.stringify({
+jsonrpc:"2.0",
+method:`condenser_api.get_discussions_by_${currentSort}`,
+params:[params],
+id:1
+})
+});
+
+const data=await res.json();
+
+posts=[...posts,...data.result];
+
+if(data.result.length){
+
+const last=data.result[data.result.length-1];
+
+startAuthor=last.author;
+startPermlink=last.permlink;
+
+}
+
+render();
+
+}catch(err){
+
+content.innerHTML="Gagal mengambil data";
+
+}
+
+}
+
+/* HOME */
+
+function renderHome(){
+
+let html="<ul>";
+
+posts.forEach(p=>{
+
+const votes = p.active_votes ? p.active_votes.length : 0;
+const comments = p.children || 0;
+const payout = p.pending_payout_value || "$0.00";
+
+html+=`
+<li onclick="openPost('${p.author}','${p.permlink}')">
+
+<div>
+
+<div style="font-weight:600">
+${p.title}
+</div>
+
+<div class="meta">
+@${p.author} • 👍 ${votes} • 💬 ${comments} • 💰 ${payout}
+</div>
+
+</div>
+
+</li>
+`;
+
+});
+
+html+="</ul>";
+
+content.innerHTML=html;
+
+document.getElementById("loadMore").style.display="block";
+
+}
+/* FIX IMAGE */
+
+function fixImages(md){
+
+return md.replace(/!\[(.*?)\]\((.*?)\)/g,
+(_,alt,url)=>`<img src="${url}" alt="${alt}" loading="lazy">`
+);
+
+}
+
+/* LOAD ARTICLE */
+
+async function renderPost(author,permlink){
+
+document.getElementById("loadMore").style.display="none";
+
+content.innerHTML="Memuat artikel...";
+
+try{
+
+const res=await fetch("https://api.hive.blog",{
+method:"POST",
+body:JSON.stringify({
+jsonrpc:"2.0",
+method:"condenser_api.get_content",
+params:[author,permlink],
+id:1
+})
+});
+
+const data=await res.json();
+
+const post=data.result;
+
+const votes = post.active_votes ? post.active_votes.length : 0;
+const comments = post.children || 0;
+const payout = post.pending_payout_value || "$0.00";
+
+let body=fixImages(post.body);
+
+let html=`
+
+<div class="post-card">
+
+<h2>${post.title}</h2>
+
+<p class="meta">
+@${post.author} • 👍 ${votes} • 💬 ${comments} • 💰 ${payout}
+</p>
+
+<div>
+${marked.parse(body)}
+</div>
+
+<p>
+<a href="https://ecency.com/@${author}/${permlink}" target="_blank">
+Buka di Ecency
+</a>
+</p>
+
+<h3>Komentar</h3>
+
+<div id="comments">Memuat komentar...</div>
+
+<button onclick="goHome()">Kembali</button>
+
+</div>
+`;
+
+content.innerHTML=html;
+
+loadComments(author,permlink);
+
+}catch(err){
+
+content.innerHTML="Gagal memuat artikel";
+
+}
+
+}
+
+/* LOAD COMMENTS */
+
+async function loadComments(author,permlink){
+
+const res=await fetch("https://api.hive.blog",{
+method:"POST",
+body:JSON.stringify({
+jsonrpc:"2.0",
+method:"bridge.get_discussion",
+params:{author,permlink},
+id:2
+})
+});
+
+const data=await res.json();
+
+const comments=data.result;
+
+let html="";
+
+Object.values(comments).forEach(c=>{
+
+if(c.depth===0) return;
+
+html+=`
+
+<div class="comment">
+
+<div class="comment-author">
+@${c.author}
+</div>
+
+<div>
+${marked.parse(fixImages(c.body))}
+</div>
+
+</div>
+`;
+
+});
+
+document.getElementById("comments").innerHTML=html;
+
+}
+
+/* NAVIGATION */
+
+function openPost(author,permlink){
+
+location.hash=`${author}/${permlink}`;
+
+}
+
+function goHome(){
+
+location.hash="";
+
+}
+
+/* RENDER */
+
+function render(){
+
+const route=getRoute();
+
+if(route.type==="home") renderHome();
+
+if(route.type==="post") renderPost(route.author,route.permlink);
+
+}
+
+
+/* LOAD MORE */
+
+document.getElementById("loadMore").onclick=loadPosts;
+
+/* HASH ROUTER */
+
+window.addEventListener("hashchange",render);
+
+/* INIT */
+
+loadPosts();
+
+</script>
+
+</body>
+</html>
