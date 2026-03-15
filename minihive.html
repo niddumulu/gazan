@@ -130,16 +130,20 @@ const content=document.getElementById("content");
 
 function getRoute(){
 
-const path=location.pathname.replace(".html","");
+const hash=location.hash.replace("#","");
 
-const parts=path.split("/").filter(Boolean);
+if(!hash) return {type:"home"};
+
+const parts=hash.split("/");
 
 if(parts.length===2){
+
 return{
 type:"post",
 author:parts[0].replace("@",""),
 permlink:parts[1]
 };
+
 }
 
 return {type:"home"};
@@ -362,13 +366,13 @@ document.getElementById("comments").innerHTML=html;
 /* NAVIGATION */
 
 function openPost(author,permlink){
-history.pushState({}, "", `@${author}/${permlink}`);
-render();
+location.hash=`@${author}/${permlink}`;
 }
 
 function goHome(){
-history.pushState({}, "", "./");
-render();
+
+location.hash="";
+
 }
 
 /* RENDER */
@@ -390,11 +394,11 @@ document.getElementById("loadMore").onclick=loadPosts;
 
 /* HASH ROUTER */
 
-//window.addEventListener("hashchange",render);
-window.addEventListener("popstate",render);
+window.addEventListener("hashchange",render);
 
 /* INIT */
 
+render();
 loadPosts();
 
 </script>
