@@ -140,7 +140,7 @@ if(parts.length===2){
 
 return{
 type:"post",
-author:parts[0],
+author:parts[0].replace("@",""),
 permlink:parts[1]
 };
 
@@ -366,9 +366,7 @@ document.getElementById("comments").innerHTML=html;
 /* NAVIGATION */
 
 function openPost(author,permlink){
-
-location.hash=`${author}/${permlink}`;
-
+location.hash=`@${author}/${permlink}`;
 }
 
 function goHome(){
