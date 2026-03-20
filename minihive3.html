@@ -1,40 +1,285 @@
 <!DOCTYPE html>
 <html lang="id">
+<head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hive URL Feed</title>
-<style>
-body{font-family:system-ui;background:#f2f4f8;margin:0;padding:20px}
-main{max-width:640px;margin:auto}
-a{display:block;margin-bottom:6px;color:#2563eb;word-break:break-all}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Hive Wuz - Full Stats Edition</title>
 
-<main>
-<h1>Hive URL Feed</h1>
-<div id="c"></div>
-</main>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+
+<style>
+:root { --primary: #2563eb; --success: #16a34a; --bg: #f2f4f8; --card: #ffffff; --text-light: #64748b; }
+body { margin: 0; padding: 12px; font-family: system-ui; background: var(--bg); color: #1f2937; }
+.container { max-width: 640px; margin: auto; }
+
+/* Stats Badge */
+.stats-row { display: flex; gap: 12px; font-size: 12px; color: var(--text-light); margin-top: 5px; align-items: center; }
+.stat-item { display: flex; align-items: center; gap: 4px; }
+.payout { color: #b45309; font-weight: bold; }
+
+/* User Area */
+.user-inline { display: flex; align-items: center; justify-content: space-between; background: var(--card); padding: 12px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #e5e7eb; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+.logout-btn { color: #ef4444; cursor: pointer; font-weight: 600; padding: 4px 8px; background: #fee2e2; border-radius: 6px; }
+
+/* Post List */
+ul { list-style: none; padding: 0; }
+li { background: var(--card); padding: 15px; margin-bottom: 10px; border-radius: 12px; cursor: pointer; border: 1px solid #e5e7eb; transition: 0.2s; }
+li:hover { border-color: var(--primary); transform: translateY(-1px); }
+.post-title { font-weight: 700; font-size: 16px; color: #111827; display: block; margin-bottom: 4px; }
+
+/* Article Card */
+.post-card { background: var(--card); padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); line-height: 1.7; }
+.post-card h2 { margin-top: 10px; font-size: 22px; }
+.post-card img { max-width: 100%; height: auto; border-radius: 12px; margin: 15px 0; }
+
+/* Action Buttons */
+button { padding: 10px 16px; border: none; border-radius: 8px; background: var(--primary); color: #fff; cursor: pointer; font-weight: 600; }
+.vote-btn-main { background: var(--success); display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 14px; }
+.vote-btn-main:disabled { background: #9ca3af; }
+
+/* Comments */
+.comment-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: 10px; }
+.comment-author { font-weight: bold; color: var(--primary); font-size: 13px; margin-bottom: 5px; display: block; }
+textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; box-sizing: border-box; font-family: inherit; margin-top: 10px; resize: vertical; }
+
+/* Modal */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.modal-box { background: #fff; padding: 25px; border-radius: 16px; width: 90%; max-width: 350px; }
+select, .input-m { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2 onclick="goHome()" style="cursor:pointer; text-align:center; letter-spacing:-1px">Hive Wuz Pro <span style="color:var(--primary)">V5</span></h2>
+    <div id="userArea"></div>
+    <div id="mainContent"></div>
+</div>
+
+<div id="loginModal" class="modal">
+    <div class="modal-box">
+        <h3 style="margin:0 0 10px 0">Login Dropdown</h3>
+        <p id="syncStatus" style="font-size:11px; color:#666">Syncing database...</p>
+        <select id="voterDropdown" onchange="applySelection()">
+            <option value="">-- Pilih Akun --</option>
+        </select>
+        <input id="username" class="input-m" placeholder="Username">
+        <input id="postingKey" class="input-m" type="password" placeholder="Posting Key">
+        <button onclick="saveLogin()" style="width:100%">Gunakan Akun</button>
+        <button onclick="closeModal()" style="width:100%; background:#9ca3af; margin-top:8px">Batal</button>
+    </div>
+</div>
 
 <script>
-(async()=>{
-let a="",p="",n=0,h="";
-while(n<10){
-try{
-const r=await fetch("https://api.hive.blog",{method:"POST",body:JSON.stringify({
-jsonrpc:"2.0",
-method:"condenser_api.get_discussions_by_created",
-params:[{limit:10,start_author:a,start_permlink:p}],
-id:1})});
-const d=await r.json();
-for(const x of d.result){
-if(parseFloat(x.pending_payout_value)>0.05){
-h+=`<a href="https://ecency.com/@${x.author}/${x.permlink}" target="_blank">https://ecency.com/@${x.author}/${x.permlink}</a>`;
-if(++n>=15)break;
-}}
-a=d.result.at(-1)?.author||""; 
-p=d.result.at(-1)?.permlink||"";
-}catch{h="Gagal mengambil data";break}
+const DB_URL = "https://script.google.com/macros/s/AKfycbzzPdLkT1PPda_r_RdTLYIWbiIIQ7hWvUc8-_s3FeF6xXV4rEX9mCQ_40xUU9YH6jCE/exec";
+let user = localStorage.getItem("hive_user") || "";
+let key = localStorage.getItem("hive_key") || "";
+let dbVoters = [];
+
+/* --- LOGIN & SYNC --- */
+async function syncDatabase() {
+    try {
+        const res = await fetch(DB_URL + "?api=list");
+        const data = await res.json();
+        dbVoters = data.voters || [];
+        const sel = document.getElementById("voterDropdown");
+        sel.innerHTML = '<option value="">-- Pilih Akun --</option>';
+        dbVoters.forEach(v => {
+            if(v.aktif) {
+                let opt = document.createElement("option");
+                opt.value = v.username; opt.dataset.key = v.postingKey;
+                opt.innerText = "👤 " + v.username;
+                sel.appendChild(opt);
+            }
+        });
+        document.getElementById("syncStatus").innerText = "Database Terhubung ✅";
+    } catch(e) { document.getElementById("syncStatus").innerText = "Gagal Sinkron ❌"; }
 }
-document.getElementById("c").innerHTML=h;
-})();
+
+function applySelection() {
+    const sel = document.getElementById("voterDropdown");
+    const opt = sel.options[sel.selectedIndex];
+    if(opt.value) {
+        document.getElementById("username").value = opt.value;
+        document.getElementById("postingKey").value = opt.dataset.key;
+    }
+}
+
+function saveLogin() {
+    user = document.getElementById("username").value.trim().toLowerCase();
+    key = document.getElementById("postingKey").value.trim();
+    if(!user || !key) return alert("Pilih akun!");
+    localStorage.setItem("hive_user", user);
+    localStorage.setItem("hive_key", key);
+    closeModal(); renderUserArea();
+}
+
+function logout() { localStorage.clear(); location.reload(); }
+
+function renderUserArea() {
+    const area = document.getElementById("userArea");
+    area.innerHTML = user 
+        ? `<div class="user-inline"><span>Halo, <b>@${user}</b></span><span class="logout-btn" onclick="logout()">Logout</span></div>`
+        : `<div class="user-inline"><span>Belum Login</span><button onclick="openModal()" style="padding:4px 10px">Login Voter</button></div>`;
+}
+
+function openModal() { document.getElementById("loginModal").style.display="flex"; syncDatabase(); }
+function closeModal() { document.getElementById("loginModal").style.display="none"; }
+
+/* --- CONTENT LOGIC --- */
+async function loadHome() {
+    document.getElementById("mainContent").innerHTML = "<p style='text-align:center'>⏳ Mengambil postingan...</p>";
+    try {
+        const res = await fetch("https://api.hive.blog", {
+            method: "POST",
+            body: JSON.stringify({ jsonrpc: "2.0", method: "condenser_api.get_discussions_by_created", params: [{limit:15}], id: 1 })
+        });
+        const data = await res.json();
+        let html = "<ul>";
+        data.result.forEach(p => {
+            const voteCount = p.active_votes ? p.active_votes.length : 0;
+            const commentCount = p.children || 0;
+            const payout = p.pending_payout_value || p.total_payout_value;
+            
+            html += `<li onclick="openPost('${p.author}','${p.permlink}')">
+                <span class="post-title">${p.title}</span>
+                <div class="stats-row">
+                    <span>@${p.author}</span>
+                    <span class="stat-item">👍 ${voteCount}</span>
+                    <span class="stat-item">💬 ${commentCount}</span>
+                    <span class="stat-item payout">💰 ${payout}</span>
+                </div>
+            </li>`;
+        });
+        document.getElementById("mainContent").innerHTML = html + "</ul>";
+    } catch(e) { document.getElementById("mainContent").innerHTML = "Error loading data."; }
+}
+
+async function openPost(author, permlink) {
+    location.hash = `@${author}/${permlink}`;
+    window.scrollTo(0,0);
+    document.getElementById("mainContent").innerHTML = "<p style='text-align:center'>⏳ Membuka artikel...</p>";
+    
+    try {
+        const res = await fetch("https://api.hive.blog", {
+            method: "POST",
+            body: JSON.stringify({ jsonrpc: "2.0", method: "condenser_api.get_content", params: [author, permlink], id: 1 })
+        });
+        const data = await res.json();
+        const p = data.result;
+
+        const voteCount = p.active_votes ? p.active_votes.length : 0;
+        const commentCount = p.children || 0;
+        const payout = p.pending_payout_value || p.total_payout_value;
+        const hasVoted = user && p.active_votes.some(v => v.voter === user);
+
+        document.getElementById("mainContent").innerHTML = `
+            <div class="post-card">
+                <button onclick="goHome()" style="background:#64748b; margin-bottom:15px; padding:6px 12px; font-size:13px">⬅ Beranda</button>
+                <h2 style="margin:0 0 10px 0">${p.title}</h2>
+                <div class="stats-row" style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px">
+                    <span>Oleh <b>@${p.author}</b></span>
+                    <span class="stat-item">👍 ${voteCount}</span>
+                    <span class="stat-item">💬 ${commentCount}</span>
+                    <span class="stat-item payout">💰 ${payout}</span>
+                    ${user ? `<button class="vote-btn-main" onclick="doVote('${p.author}','${p.permlink}', this)" ${hasVoted?'disabled':''}>${hasVoted?'Voted':'👍 Vote'}</button>` : ''}
+                </div>
+                <div style="font-size:16px">${marked.parse(p.body)}</div>
+                
+                <div style="margin-top:40px;">
+                    <h3 style="border-left:4px solid var(--primary); padding-left:10px">Diskusi (${commentCount})</h3>
+                    <div id="commentFormMain"></div>
+                    <div id="commentList">Memuat komentar...</div>
+                </div>
+            </div>
+        `;
+        renderCommentForm(author, permlink);
+        loadComments(author, permlink);
+    } catch(e) { document.getElementById("mainContent").innerHTML = "Gagal memuat artikel."; }
+}
+
+/* --- ACTION LOGIC --- */
+function doVote(author, permlink, btn) {
+    if(!user || !key) return alert("Login dulu!");
+    btn.innerText = "⌛"; btn.disabled = true;
+    hive.broadcast.vote(key, user, author, permlink, 10000, (err, res) => {
+        if(err) { alert("Gagal: "+err.message); btn.innerText = "👍 Vote"; btn.disabled = false; }
+        else { btn.innerText = "Voted"; }
+    });
+}
+
+function renderCommentForm(author, permlink) {
+    if(!user) return;
+    document.getElementById("commentFormMain").innerHTML = `
+        <div class="comment-box" style="background:#fff; border:2px solid var(--primary)">
+            <b style="font-size:13px">Tulis Komentar:</b>
+            <textarea id="txtMain" placeholder="Apa pendapatmu?"></textarea>
+            <button onclick="sendComment('${author}','${permlink}','${author}','${permlink}','txtMain')" style="width:100%; margin-top:8px">Kirim Komentar</button>
+        </div>
+    `;
+}
+
+async function loadComments(author, permlink) {
+    const res = await fetch("https://api.hive.blog", {
+        method: "POST",
+        body: JSON.stringify({ jsonrpc: "2.0", method: "bridge.get_discussion", params: {author, permlink}, id: 1 })
+    });
+    const data = await res.json();
+    const list = document.getElementById("commentList");
+    list.innerHTML = "";
+    
+    const results = Object.values(data.result);
+    if(results.length <= 1) { list.innerHTML = "<p style='color:#666; font-style:italic'>Belum ada komentar.</p>"; return; }
+
+    results.forEach(c => {
+        if(c.depth === 0) return;
+        const div = document.createElement("div");
+        div.className = "comment-box";
+        div.style.marginLeft = (Math.min(c.depth, 5) * 12) + "px";
+        div.innerHTML = `
+            <span class="comment-author">@${c.author} <small style="color:#999; font-weight:normal">• ${c.pending_payout_value}</small></span>
+            <div style="font-size:14px">${marked.parse(c.body)}</div>
+            ${user ? `<button style="background:none; color:var(--primary); font-size:11px; padding:0; text-decoration:underline" onclick="showReplyBox('${c.author}','${c.permlink}', this, '${author}', '${permlink}')">Balas</button>` : ''}
+            <div id="reply-area-${c.permlink}"></div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function showReplyBox(cAuth, cPerm, btn, rootAuth, rootPerm) {
+    const area = document.getElementById(`reply-area-${cPerm}`);
+    if(area.innerHTML !== "") { area.innerHTML = ""; return; }
+    area.innerHTML = `
+        <textarea id="txt-${cPerm}" placeholder="Balas @${cAuth}..."></textarea>
+        <button onclick="sendComment('${rootAuth}','${rootPerm}','${cAuth}','${cPerm}','txt-${cPerm}')" style="font-size:12px; margin-top:5px; padding:6px 12px">Kirim</button>
+    `;
+}
+
+function sendComment(rootAuth, rootPerm, pAuth, pPerm, txtId) {
+    const body = document.getElementById(txtId).value.trim();
+    if(!body) return alert("Komentar kosong!");
+    const permlink = "re-" + user.replace(/\./g,'-') + "-" + Date.now();
+    
+    hive.broadcast.comment(key, pAuth, pPerm, user, permlink, "", body, "", (err, res) => {
+        if(err) alert("Gagal: " + err.message);
+        else { alert("Komentar masuk!"); openPost(rootAuth, rootPerm); }
+    });
+}
+
+/* --- ROUTER --- */
+function goHome() { location.hash = ""; loadHome(); }
+function init() {
+    renderUserArea();
+    const h = location.hash.replace("#", "");
+    if(h.includes("/")) {
+        const p = h.split("/");
+        openPost(p[0].replace("@",""), p[1]);
+    } else { loadHome(); }
+}
+
+window.addEventListener("hashchange", init);
+window.onload = init;
 </script>
+</body>
 </html>
