@@ -1,239 +1,206 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Hive Wuz Ultra Super Cepat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Hive Wuz Ultra Fast Viewer</title>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
 
-<style>
-html,body{height:100%;margin:0;padding:12px;font-family:system-ui;background:#f2f4f8;overflow-x:hidden;}
-.container{max-width:640px;margin:auto;}
-h1{color:#1f2937;margin-bottom:12px;}
-ul{list-style:none;padding:0;}
-li{background:#fff;padding:12px;margin-bottom:8px;border-radius:8px;cursor:pointer;transition:.2s;}
-li:hover{background:#2563eb;color:#fff;}
-.post-card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 3px 10px rgba(0,0,0,.08);margin-bottom:16px;line-height:1.6;word-wrap:break-word;overflow-wrap:break-word;}
-.post-card img{max-width:100%;height:auto;border-radius:8px;margin:10px 0;}
-.comment{background:#f9fafb;border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid #e5e7eb;}
-.comment-author{font-weight:600;color:#2563eb;}
-button{padding:8px;border:none;border-radius:8px;background:#2563eb;color:#fff;cursor:pointer;font-weight:600;}
-.vote-btn-small{background:#16a34a;color:#fff;border:none;border-radius:6px;padding:2px 6px;font-size:12px;width:auto;margin-left:6px;cursor:pointer;}
-.vote-btn-small:disabled{background:#9ca3af;cursor:not-allowed;}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:999;}
-.modal-box{background:#fff;padding:20px;border-radius:12px;width:90%;max-width:320px;}
-input{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #ddd;box-sizing:border-box;font-size:16px;}
-input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,0.2);}
-.user-inline{display:flex;align-items:center;gap:8px;font-size:14px;}
-.logout-inline{color:#ef4444;cursor:pointer;font-weight:500;font-size:13px;padding:2px 6px;border-radius:6px;transition:0.2s;}
-.logout-inline:hover{background:#fee2e2;}
-</style>
+    <style>
+        html, body { height: 100%; margin: 0; padding: 12px; font-family: system-ui, -apple-system, sans-serif; background: #f2f4f8; color: #1f2937; overflow-x: hidden; }
+        .container { max-width: 640px; margin: auto; }
+        h1 { font-size: 20px; color: #1f2937; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        
+        /* Card & List */
+        ul { list-style: none; padding: 0; }
+        li { background: #fff; padding: 15px; margin-bottom: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: .2s; border: 1px solid #e5e7eb; }
+        li:active { transform: scale(0.98); background: #f9fafb; }
+        
+        .post-card { background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 16px; line-height: 1.6; word-wrap: break-word; }
+        .post-card img { max-width: 100% !important; height: auto !important; border-radius: 8px; margin: 15px 0; display: block; }
+        
+        /* Comments */
+        .comment { background: #f9fafb; border-radius: 10px; padding: 12px; margin-top: 10px; border: 1px solid #e5e7eb; font-size: 14px; }
+        .comment-author { font-weight: 700; color: #2563eb; font-size: 13px; margin-bottom: 5px; }
+        
+        /* Buttons */
+        button { padding: 10px 16px; border: none; border-radius: 8px; background: #2563eb; color: #fff; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .btn-back { background: #64748b; margin-bottom: 15px; width: 100%; }
+        .vote-btn-small { background: #16a34a; padding: 4px 10px; font-size: 12px; margin-left: 8px; }
+        .vote-btn-small:disabled { background: #9ca3af; }
+
+        /* Modal & UI */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 999; }
+        .modal-box { background: #fff; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        .user-inline { background: #fff; padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 14px; border: 1px solid #e5e7eb; }
+        .logout { color: #ef4444; font-weight: bold; margin-left: 10px; cursor: pointer; }
+        
+        #status-msg { text-align: center; padding: 40px; color: #64748b; font-style: italic; }
+    </style>
 </head>
 <body>
 
 <div class="container">
-<h1>Hive Wuz Ultra Super Cepat</h1>
-<div id="userArea"></div>
-<div id="content"></div>
+    <h1>⚡ Hive Fast Viewer</h1>
+    <div id="userArea"></div>
+    <div id="mainContent"></div>
 
-<div id="loginModal" class="modal">
-  <div class="modal-box">
-    <h3>Login</h3>
-    <input id="username" placeholder="Username">
-    <input id="postingKey" placeholder="Posting Key">
-    <button onclick="saveLogin()">Login</button>
-    <button onclick="closeModal()" style="background:#9ca3af;margin-top:6px;">Batal</button>
-  </div>
-</div>
+    <div id="loginModal" class="modal">
+        <div class="modal-box">
+            <h3 style="margin-top:0">Login Hive</h3>
+            <input id="username" placeholder="Username (tanpa @)">
+            <input id="postingKey" type="password" placeholder="Private Posting Key">
+            <button onclick="saveLogin()" style="width:100%">Simpan & Masuk</button>
+            <button onclick="closeModal()" style="background:none; color:#64748b; width:100%; margin-top:10px;">Batal</button>
+        </div>
+    </div>
 </div>
 
 <script>
 let user = localStorage.getItem("hive_user") || "";
 let key = localStorage.getItem("hive_key") || "";
-let startAuthor="", startPermlink="", currentSort="created";
-let posts=[], cachePosts={}, cacheComments={};
-const content=document.getElementById("content");
+let cachePosts = {};
+const mainContent = document.getElementById("mainContent");
 
-/* LOGIN */
-function saveLogin(){
-  user=document.getElementById("username").value.trim().toLowerCase().replace(/[^a-z0-9.-]/g,"");
-  key=document.getElementById("postingKey").value.trim();
-  if(!user||!key){alert("Isi username & posting key!");return;}
-  localStorage.setItem("hive_user",user);
-  localStorage.setItem("hive_key",key);
-  closeModal();
-  renderUserArea();
+/* --- UI HELPERS --- */
+function renderUserArea() {
+    const el = document.getElementById("userArea");
+    el.innerHTML = user 
+        ? `<div class="user-inline">👤 <b>${user}</b> <span class="logout" onclick="logout()">Logout</span></div>`
+        : `<div class="user-inline">Belum masuk. <span style="color:#2563eb; font-weight:bold; cursor:pointer" onclick="openModal()">Login di sini</span></div>`;
 }
-function logout(){localStorage.removeItem("hive_user");localStorage.removeItem("hive_key");user="";key="";renderUserArea();}
-function renderUserArea(){
-  const el=document.getElementById("userArea");
-  el.innerHTML=user?`<p class="user-inline">Login sebagai: <b>${user}</b> <span class="logout-inline" onclick="logout()">Logout</span></p>`:`<p class="user-inline">Yuk <span style="color:#2563eb;cursor:pointer" onclick="openModal()">Login</span></p>`;
-}
-function openModal(){document.getElementById("loginModal").style.display="flex";}
-function closeModal(){document.getElementById("loginModal").style.display="none";}
-
-/* ROUTE */
-function getRoute(){
-  const hash=location.hash.replace("#","");
-  if(!hash) return {type:"home"};
-  const parts=hash.split("/");
-  if(parts.length===2) return {type:"post",author:parts[0].replace("@",""),permlink:parts[1]};
-  return {type:"home"};
+function openModal() { document.getElementById("loginModal").style.display = "flex"; }
+function closeModal() { document.getElementById("loginModal").style.display = "none"; }
+function logout() { localStorage.clear(); location.reload(); }
+function saveLogin() {
+    const u = document.getElementById("username").value.trim().toLowerCase();
+    const k = document.getElementById("postingKey").value.trim();
+    if(!u || !k) return alert("Lengkapi data!");
+    localStorage.setItem("hive_user", u);
+    localStorage.setItem("hive_key", k);
+    location.reload();
 }
 
-/* FETCH POSTS */
-let loadingPosts=false;
-async function loadPosts(){
-  if(loadingPosts) return;
-  loadingPosts=true;
-  const params={limit:10};
-  if(startAuthor){params.start_author=startAuthor; params.start_permlink=startPermlink;}
-  try{
-    const res=await fetch("https://api.hive.blog",{method:"POST",body:JSON.stringify({jsonrpc:"2.0",method:`condenser_api.get_discussions_by_${currentSort}`,params:[params],id:1})});
-    const data=await res.json();
-    data.result.forEach(p=>{
-      posts.push(p);
-      cachePosts[p.author+"/"+p.permlink]={...p}; // cache basic
-      prefetchPostBody(p.author,p.permlink); // prefetch body ringan
-      prefetchComments(p.author,p.permlink); // prefetch komentar minimal
+/* --- ROUTING --- */
+function getRoute() {
+    const hash = location.hash.replace("#", "");
+    if (!hash) return { type: "home" };
+    if (hash.includes("@")) {
+        const parts = hash.replace("@", "").split("/");
+        return { type: "post", author: parts[0], permlink: parts[1] };
+    }
+    return { type: "home" };
+}
+
+/* --- DATA FETCHING --- */
+async function loadHome() {
+    mainContent.innerHTML = "<div id='status-msg'>⏳ Memuat postingan terbaru...</div>";
+    try {
+        const res = await fetch("https://api.hive.blog", {
+            method: "POST",
+            body: JSON.stringify({
+                jsonrpc: "2.0", method: "condenser_api.get_discussions_by_created",
+                params: [{ limit: 15, tag: "" }], id: 1
+            })
+        });
+        const data = await res.json();
+        let html = "<ul>";
+        data.result.forEach(p => {
+            cachePosts[`${p.author}/${p.permlink}`] = p;
+            html += `<li onclick="location.hash='@${p.author}/${p.permlink}'">
+                <b>${p.title}</b><br>
+                <small>@${p.author} • 💰 ${p.pending_payout_value}</small>
+            </li>`;
+        });
+        html += "</ul>";
+        mainContent.innerHTML = html;
+    } catch (e) { mainContent.innerHTML = "Gagal memuat data."; }
+}
+
+async function renderPost(author, permlink) {
+    mainContent.innerHTML = "<div id='status-msg'>🚀 Menjemput data dari Blockchain...</div>";
+    const postKey = `${author}/${permlink}`;
+    let post = cachePosts[postKey];
+
+    try {
+        // Jika tidak ada di cache, ambil langsung
+        if (!post || !post.body) {
+            const res = await fetch("https://api.hive.blog", {
+                method: "POST",
+                body: JSON.stringify({
+                    jsonrpc: "2.0", method: "condenser_api.get_content",
+                    params: [author, permlink], id: 2
+                })
+            });
+            const data = await res.json();
+            post = data.result;
+        }
+
+        const alreadyVoted = user && post.active_votes.some(v => v.voter === user);
+        
+        mainContent.innerHTML = `
+            <button class="btn-back" onclick="location.hash=''">⬅ Kembali ke Beranda</button>
+            <div class="post-card">
+                <h2 style="margin-top:0">${post.title}</h2>
+                <p><small>@${post.author} • 💰 ${post.pending_payout_value}
+                ${user ? `<button class="vote-btn-small" ${alreadyVoted?"disabled":""} onclick="doVote('${author}','${permlink}', this)">${alreadyVoted?'Sudah Vote':'Vote 100%'}</button>` : ''}
+                </small></p>
+                <hr style="border:0; border-top:1px solid #eee; margin:15px 0">
+                <div class="post-body">${marked.parse(post.body)}</div>
+                <h3 style="margin-top:25px; border-top:2px solid #eee; padding-top:15px">Komentar</h3>
+                <div id="commentSection">Memuat komentar...</div>
+            </div>
+        `;
+        loadComments(author, permlink);
+    } catch (e) { mainContent.innerHTML = "Postingan tidak ditemukan."; }
+}
+
+async function loadComments(author, permlink) {
+    try {
+        const res = await fetch("https://api.hive.blog", {
+            method: "POST",
+            body: JSON.stringify({
+                jsonrpc: "2.0", method: "bridge.get_discussion",
+                params: { author, permlink }, id: 3
+            })
+        });
+        const data = await res.json();
+        const container = document.getElementById("commentSection");
+        container.innerHTML = "";
+        
+        Object.values(data.result).forEach(c => {
+            if (c.depth === 0) return;
+            const div = document.createElement("div");
+            div.className = "comment";
+            div.style.marginLeft = `${(c.depth - 1) * 15}px`;
+            div.innerHTML = `<div class="comment-author">@${c.author}</div>${marked.parse(c.body)}`;
+            container.appendChild(div);
+        });
+    } catch (e) { document.getElementById("commentSection").innerHTML = ""; }
+}
+
+function doVote(author, permlink, btn) {
+    if(!user || !key) return alert("Login dulu!");
+    btn.disabled = true; btn.innerText = "Voting...";
+    hive.broadcast.vote(key, user, author, permlink, 10000, (err) => {
+        if(err) { alert(err.message); btn.disabled = false; btn.innerText = "Vote"; }
+        else { btn.innerText = "Berhasil!"; }
     });
-    if(data.result.length){const last=data.result[data.result.length-1]; startAuthor=last.author; startPermlink=last.permlink;}
-    if(getRoute().type==="home") renderHome();
-  }catch(err){console.log("Gagal ambil post",err);}
-  loadingPosts=false;
 }
 
-/* PREFETCH POST BODY */
-async function prefetchPostBody(author,permlink){
-  const key=author+"/"+permlink;
-  if(cachePosts[key].body) return;
-  try{
-    const res=await fetch("https://api.hive.blog",{method:"POST",body:JSON.stringify({jsonrpc:"2.0",method:"condenser_api.get_content",params:[author,permlink],id:2})});
-    const data=await res.json();
-    cachePosts[key].body=data.result.body;
-  }catch{}
+/* --- APP LOGIC --- */
+function router() {
+    const route = getRoute();
+    route.type === "post" ? renderPost(route.author, route.permlink) : loadHome();
+    renderUserArea();
 }
 
-/* PREFETCH COMMENTS LIGHT */
-async function prefetchComments(author,permlink){
-  const key=author+"/"+permlink;
-  if(cacheComments[key]) return;
-  try{
-    const res=await fetch("https://api.hive.blog",{method:"POST",body:JSON.stringify({jsonrpc:"2.0",method:"bridge.get_discussion",params:{author,permlink},id:3})});
-    const data=await res.json();
-    cacheComments[key]={childrenCount:data.result.children||0}; // hanya hitungan ringan
-  }catch{}
-}
+window.addEventListener("hashchange", router);
+window.onload = router;
 
-/* HOME */
-function renderHome(){
-  let html="<ul>";
-  posts.forEach(p=>{
-    const votes=p.active_votes?p.active_votes.length:0;
-    const comments=cacheComments[p.author+"/"+p.permlink]?.childrenCount||0;
-    const payout=p.pending_payout_value||"$0.00";
-    html+=`<li onclick="openPost('${p.author}','${p.permlink}')">
-      <div><b>${p.title}</b><br><small>@${p.author} • 👍 ${votes} • 💬 ${comments} • 💰 ${payout}</small></div>
-    </li>`;
-  });
-  html+="</ul>";
-  content.innerHTML=html;
-}
-
-/* LOAD ARTICLE */
-async function renderPost(author,permlink){
-  window.scrollTo(0,0);
-  content.innerHTML="<div>⏳ Memuat artikel…</div>";
-  const postKey=author+"/"+permlink;
-  if(!cachePosts[postKey].body) await prefetchPostBody(author,permlink);
-  const post=cachePosts[postKey];
-  const votes=post.active_votes?post.active_votes.length:0;
-  const commentsCount=post.children||0;
-  const payout=post.pending_payout_value||"$0.00";
-  const alreadyVoted=user && post.active_votes.some(v=>v.voter===user);
-  const body=post.body?marked.parse(post.body):"<i>Konten belum dimuat…</i>";
-  content.innerHTML=`
-    <div class="post-card">
-      <h2>${post.title}</h2>
-      <p><small>@${post.author} • 👍 ${votes} • 💬 ${commentsCount} • 💰 ${payout} 
-      ${user?`<button class="vote-btn-small" ${alreadyVoted?"disabled":""} onclick="vote('${author}','${permlink}', this)">${alreadyVoted?"Sudah Vote":"Vote"}</button>`:""}</small></p>
-      <div>${body}</div>
-      <h3>Komentar</h3>
-      <div id="comments">Memuat komentar…</div>
-      <button onclick="goHome()">Kembali</button>
-    </div>
-  `;
-  loadComments(author,permlink);
-  renderUserArea();
-}
-
-/* COMMENTS */
-async function loadComments(author,permlink){
-  const key=author+"/"+permlink;
-  if(!cacheComments[key]?.children) cacheComments[key]={children:[]};
-  try{
-    const res=await fetch("https://api.hive.blog",{method:"POST",body:JSON.stringify({jsonrpc:"2.0",method:"bridge.get_discussion",params:{author,permlink},id:4})});
-    const data=await res.json();
-    cacheComments[key]=data.result;
-    renderComments(author,permlink);
-  }catch{}
-}
-function renderComments(author,permlink){
-  const key=author+"/"+permlink;
-  const container=document.getElementById("comments");
-  container.innerHTML="";
-  const data=cacheComments[key];
-  if(!data){container.innerHTML="<i>Tidak ada komentar.</i>";return;}
-  Object.values(data).forEach(c=>{
-    if(c.depth===0) return;
-    const div=document.createElement("div");
-    div.className="comment";
-    div.style.marginLeft=`${(c.depth-1)*20}px`;
-    div.innerHTML=`<div class="comment-author">@${c.author}</div><div>${marked.parse(c.body||"")}</div>
-    <button onclick="replyComment('${author}','${permlink}','${c.author}','${c.permlink}')">Balas</button>`;
-    container.appendChild(div);
-  });
-}
-
-/* BALAS KOMENTAR */
-function replyComment(postAuthor,postPermlink,parentAuthor,parentPermlink){
-  const text=prompt(`Balas komentar @${parentAuthor}:`);
-  if(!text) return;
-  if(!user||!key){alert("Login dulu!"); return;}
-  hive.broadcast.comment(key,user,postAuthor,postPermlink,parentAuthor,parentPermlink,text,{},(err,res)=>{
-    if(err) alert("Gagal balas komentar: "+err.message);
-    else loadComments(postAuthor,postPermlink);
-  });
-}
-
-/* VOTE */
-function vote(author,permlink,btn){
-  if(!user||!key){alert("Login dulu!"); return;}
-  btn.innerText="Voting…"; btn.disabled=true;
-  hive.broadcast.vote(key,user,author,permlink,10000,function(err,result){
-    if(err){alert("Gagal vote: "+err.message); btn.innerText="Vote"; btn.disabled=false;}
-    else{btn.innerText="Sudah Vote"; btn.disabled=true;}
-  });
-}
-
-/* NAVIGATION */
-function openPost(author,permlink){location.hash=`@${author}/${permlink}`;}
-function goHome(){location.hash="";}
-
-/* INFINITE SCROLL */
-window.addEventListener("scroll",()=>{
-  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 300){
-    loadPosts();
-  }
-});
-
-/* INIT */
-window.addEventListener("hashchange",()=>{const route=getRoute(); route.type==="home"?renderHome():renderPost(route.author,route.permlink);});
-renderUserArea();
-renderHome();
-loadPosts();
 </script>
 </body>
 </html>
