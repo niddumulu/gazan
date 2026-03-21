@@ -1,38 +1,176 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <title>Ecency URL Converter</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecency URL Converter Mobile</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #64748b;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-paste {
+            background-color: #f1f5f9;
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+
+        .btn-convert {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .result-box {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 10px;
+            word-break: break-all;
+            min-height: 40px;
+            font-size: 0.9rem;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .result-box a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-note {
+            font-size: 0.75rem;
+            text-align: center;
+            margin-top: 15px;
+            color: #94a3b8;
+        }
+    </style>
 </head>
 <body>
-  <h2>Ecency URL Converter</h2>
 
-  <label for="originalUrl">Masukkan URL Ecency:</label><br>
-  <input type="text" id="originalUrl" size="100" placeholder="https://ecency.com/@egoaquiles/meeting-sebastian-through-fe-de-vida-espeng"><br><br>
+<div class="container">
+    <h2>Ecency URL Converter</h2>
 
-  <button onclick="convertURL()">Convert</button>
+    <label for="originalUrl">Masukkan URL Ecency</label>
+    <div class="input-group">
+        <input type="text" id="originalUrl" placeholder="Tempel URL di sini...">
+        <button class="btn btn-paste" onclick="pasteURL()">📋 Paste</button>
+    </div>
 
-  <h3>Hasil URL:</h3>
-  <p id="convertedUrl"></p>
+    <button class="btn btn-convert" onclick="convertURL()">Convert Sekarang</button>
 
-  <script>
-    function convertURL() {
-      const input = document.getElementById('originalUrl').value.trim();
-      const resultElement = document.getElementById('convertedUrl');
+    <label>Hasil URL:</label>
+    <div id="convertedUrl" class="result-box">Belum ada hasil...</div>
+    
+    <div class="footer-note">Gunakan tombol Paste untuk mempercepat input</div>
+</div>
 
-      // Cek apakah URL mengandung "@"
-      const match = input.match(/@([^/]+)\/([^?#]+)/);
-
-      if (match) {
-        
-        const author = match[1];
-        const permlink = match[2];
-
-        const newUrl = `https://niddumulu.github.io/gazan/article.html?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
-        resultElement.innerHTML = `<a href="${newUrl}" target="_blank">${newUrl}</a>`;
-      } else {
-        resultElement.textContent = "URL tidak valid atau tidak sesuai format Ecency.";
-      }
+<script>
+    async function pasteURL() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('originalUrl').value = text;
+        } catch (err) {
+            alert("Gagal mengakses clipboard. Pastikan izin browser aktif atau tempel manual.");
+        }
     }
-  </script>
+
+    function convertURL() {
+        const input = document.getElementById('originalUrl').value.trim();
+        const resultElement = document.getElementById('convertedUrl');
+
+        // Regex untuk menangkap author dan permlink
+        const match = input.match(/@([^/]+)\/([^?#]+)/);
+
+        if (match) {
+            const author = match[1];
+            const permlink = match[2];
+
+            const newUrl = `https://niddumulu.github.io/gazan/article.html?author=${encodeURIComponent(author)}&permlink=${encodeURIComponent(permlink)}`;
+            
+            resultElement.innerHTML = `<a href="${newUrl}" target="_blank" id="finalLink">${newUrl}</a>`;
+            
+            // Opsional: Langsung salin ke clipboard setelah convert
+            copyToClipboard(newUrl);
+        } else {
+            resultElement.textContent = "URL tidak valid. Pastikan formatnya benar (mengandung @author/permlink).";
+            resultElement.style.color = "#ef4444";
+        }
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            console.log("Hasil disalin otomatis");
+        });
+    }
+</script>
+
 </body>
 </html>
