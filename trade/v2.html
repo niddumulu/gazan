@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hive Keychain Test</title>
+<script src="https://unpkg.com/@hiveio/hive-js@latest/dist/hive.min.js"></script>
+<style>
+body{margin:0;background:#080a0c;color:#fff;font-family:Arial;padding:15px}
+.card{background:#1c2126;border:1px solid #333;border-radius:12px;padding:16px;margin:10px 0}
+.btn{width:100%;padding:15px;border-radius:10px;border:0;font-weight:bold;cursor:pointer;font-size:14px;margin-top:10px}
+.btn-kc{background:#ff3b3b;color:#fff}
+.btn-d{background:#2a2f35;color:#fff}
+input{width:100%;padding:12px;border-radius:8px;border:1px solid #333;background:#000;color:#fff;margin-top:8px}
+.log{background:#000;border:1px solid #222;border-radius:8px;padding:10px;font-size:11px;white-space:pre-wrap;margin-top:10px;min-height:100px}
+</style>
+</head>
+<body>
+<h3>HIVE KEYCHAIN TEST</h3>
+
+<div class="card">
+<div style="font-size:12px;color:#888" id="detect">Mengecek keychain...</div>
+<input id="user" placeholder="username hive kamu, contoh: masabqory">
+<button class="btn btn-kc" onclick="loginKC()" id="kcBtn">🔑 LOGIN KEYCHAIN - TAP DISINI</button>
+<button class="btn btn-d" onclick="checkKC()">🔍 CEK APA KEYCHAIN ADA?</button>
+<div class="log" id="log">Log:\n</div>
+</div>
+
+<div class="card" id="okCard" style="display:none">
+<b id="accName"></b><br>
+<div id="bals"></div>
+</div>
+
+<script>
+let account="";
+function addLog(t){
+  let el=document.getElementById('log');
+  el.textContent += "> " + t + "\n";
+  console.log(t);
+}
+
+function checkKC(){
+  addLog("window.hive_keychain = " + typeof window.hive_keychain);
+  if(window.hive_keychain){
+    addLog("ADA! version=" + (window.hive_keychain.version||"unknown"));
+    addLog("Methods: " + Object.keys(window.hive_keychain).join(", "));
+    document.getElementById('detect').innerHTML = "✅ TERDETEKSI: " + Object.keys(window.hive_keychain).join(", ");
+    document.getElementById('detect').style.color="#00ff88";
+  }else{
+    addLog("TIDAK ADA - kamu buka di Chrome, bukan di Browser Keychain APK");
+    document.getElementById('detect').innerHTML = "❌ TIDAK TERDETEKSI - Buka di APK Hive Keychain > Browser";
+    document.getElementById('detect').style.color="red";
+  }
+}
+
+// WAJIB: Keychain mobile inject telat, harus tunggu event ini
+window.addEventListener('hive_keychain_ready', function(){
+  addLog("EVENT hive_keychain_ready FIRED!");
+  checkKC();
+});
+
+// Cek berkala
+let i=0;
+let iv=setInterval(()=>{
+  i++;
+  if(window.hive_keychain){ clearInterval(iv); checkKC(); }
+  if(i>20){ clearInterval(iv); }
+},500);
+
+setTimeout(checkKC, 1000);
+
+function loginKC(){
+  addLog("Tombol diklik!");
+  
+  if(!window.hive_keychain){
+    addLog("GAGAL: hive_keychain tidak ada");
+    alert("Buka halaman ini DI DALAM aplikasi Hive Keychain, menu Browser bawah, bukan di Chrome!");
+    return;
+  }
+
+  let username = document.getElementById('user').value.trim().toLowerCase();
+  if(!username){
+    addLog("Username kosong, coba handshake tanpa username...");
+    // Cara 1: handshake (untuk extension)
+    try{
+      addLog("Mencoba requestHandshake...");
+      window.hive_keychain.requestHandshake(function(res){
+        addLog("Handshake callback: " + JSON.stringify(res));
+        if(res.success){
+          account=res.data.username;
+          document.getElementById('accName').textContent="@"+account;
+          document.getElementById('okCard').style.display='block';
+          addLog("SUKSES LOGIN @"+account);
+          loadBalance();
+        }else{
+          addLog("Handshake gagal: "+res.message+" -> coba signBuffer");
+          // fallback ke signBuffer dengan prompt
+          username = prompt("Masukkan username Hive:");
+          if(username) loginWithSignBuffer(username);
+        }
+      });
+    }catch(e){
+      addLog("Handshake error: "+e.message);
+      username = prompt("Masukkan username:");
+      if(username) loginWithSignBuffer(username);
+    }
+  }else{
+    loginWithSignBuffer(username);
+  }
+}
+
+function loginWithSignBuffer(username){
+  addLog("Mencoba signBuffer dengan user: "+username);
+  // Cara 2: signBuffer (paling stabil di APK)
+  window.hive_keychain.requestSignBuffer(username, "login-test-"+Date.now(), "Posting", function(res){
+    addLog("signBuffer callback: "+JSON.stringify(res));
+    if(res.success){
+      account=username;
+      document.getElementById('accName').textContent="@"+account;
+      document.getElementById('okCard').style.display='block';
+      addLog("SUKSES LOGIN @"+account+" via signBuffer");
+      loadBalance();
+    }else{
+      addLog("signBuffer gagal: "+res.message);
+      alert("Gagal: "+res.message);
+    }
+  });
+}
+
+async function loadBalance(){
+  addLog("Load balance @"+account+"...");
+  try{
+    let r=await fetch("https://api.hive-engine.com/rpc/contracts",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({jsonrpc:"2.0",method:"find",params:{contract:"tokens",table:"balances",query:{account:account}},id:1})
+    });
+    let j=await r.json();
+    addLog("Balance dapat: "+ (j.result?j.result.length:0) +" token");
+    document.getElementById('bals').textContent = JSON.stringify(j.result.slice(0,5), null, 2);
+  }catch(e){ addLog("Balance error: "+e.message); }
+}
+</script>
+</body>
+</html>
