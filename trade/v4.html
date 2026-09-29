@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hive Engine Market - PRO KEYCHAIN + AUTO REFRESH</title>
+<script src="https://unpkg.com/@hiveio/hive-js@latest/dist/hive.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080a0c;color:#e6e8ea;font-family:'Inter',Arial,sans-serif}
+.app{max-width:480px;margin:auto;min-height:100vh;background:radial-gradient(600px at 50% -100px, #1a2a22 0%, transparent 60%), #080a0c}
+.header{padding:18px 16px 10px;display:flex;justify-content:space-between;align-items:center}
+.header h3{margin:0;font-size:16px;font-weight:800;letter-spacing:-.5px}
+.header span{font-size:10px;background:#1a1e22;border:1px solid #2a2f35;padding:4px 8px;border-radius:20px;color:#7a7f85}
+.card{background:linear-gradient(180deg,#1c2126 0%,#161a1e 100%);border:1px solid #23282e;border-radius:18px;padding:16px;margin:12px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+label{display:block;font-size:10px;color:#7a7f85;font-weight:700;letter-spacing:.8px;margin-top:12px;text-transform:uppercase}
+input,select{width:100%;padding:13px 14px;margin-top:6px;border-radius:12px;border:1px solid #2a2f35;background:#0d0f11;color:#fff;outline:none;font-family:'JetBrains Mono',monospace;font-size:13px;transition:.2s}
+input:focus,select:focus{border-color:#00ff88;box-shadow:0 0 0 3px rgba(0,255,136,.15)}
+.btn{width:100%;padding:13px;border-radius:12px;border:0;font-weight:800;cursor:pointer;font-family:'Inter';letter-spacing:.2px;transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-g{background:#00ff88;color:#000;box-shadow:0 4px 15px rgba(0,255,136,.3)}
+.btn-r{background:#ff3b4a;color:#fff;box-shadow:0 4px 15px rgba(255,59,74,.25)}
+.btn-d{background:#242a30;color:#d0d4d8}
+.btn-kc{background:linear-gradient(90deg,#00ff88,#00cc6a);color:#000;box-shadow:0 4px 15px rgba(0,255,136,.3)}
+.status{padding:12px;border-radius:12px;background:#0d0f11;border:1px solid #22272d;margin-top:10px;font-size:11.5px;white-space:pre-wrap;word-break:break-word;line-height:1.6;font-family:'JetBrains Mono',monospace}
+.pill{background:#1e2429;border:1px solid #2a2f35;padding:5px 10px;border-radius:20px;font-size:11px;display:inline-block;margin:3px;font-family:'JetBrains Mono'}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.small-row{display:flex;gap:8px;margin-top:8px}
+.small-row button{flex:1;padding:10px;font-size:12px;font-weight:700}
+.hidden{display:none!important}
+.danger{background:#2a1a1e!important;border-color:#3a2025!important;color:#ff8a94}
+.success{color:#00ff88}.warning{color:#ffd166}.error{color:#ff6b6b}
+.market-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.badge{font-size:10px;padding:4px 8px;border-radius:8px;background:#0d0f11;border:1px solid #2a2f35;color:#7a7f85}
+.divider{height:1px;background:linear-gradient(90deg,transparent,#23282e,transparent);margin:14px 0}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><h3>HIVE ENGINE • PRO</h3><span id="kcDetect">CHECKING...</span></div>
+
+<div class="card">
+<label>Hive Keychain Login (Auto Sync)</label>
+<input id="user" placeholder="masabqory" autocomplete="off">
+<button id="kcBtn" onclick="loginKC()" class="btn btn-kc" style="margin-top:10px">🔑 LOGIN KEYCHAIN</button>
+<div id="kcStatus" class="status">Menunggu Keychain...</div>
+
+<label style="margin-top:14px">Atau Manual Active Key</label>
+<input id="key" type="password" placeholder="5J... (opsional jika pakai Keychain)" autocomplete="off">
+<button id="loadBtn" class="btn btn-d" style="margin-top:10px">HUBUNGKAN MANUAL</button>
+<div id="info" class="status">Belum terhubung. Di APK Keychain, ketik username lalu TAP Login Keychain.</div>
+<div id="bals" style="margin-top:10px"></div>
+</div>
+
+<div class="card hidden" id="tradeCard">
+<div class="market-head"><label style="margin:0">Market</label><span class="badge" id="pairBadge">-</span></div>
+<select id="tokenSelect"></select>
+<div id="pair" class="status">-</div>
+<div class="divider"></div>
+<label>Jumlah Token</label>
+<input id="qty" type="number" step="any" min="0" placeholder="1000">
+<div class="small-row">
+<button class="btn btn-d" id="btn100">100</button>
+<button class="btn btn-d" id="btn1k">1K</button>
+<button class="btn btn-d" id="maxBtn">MAX</button>
+</div>
+<label>Buffer Slippage</label>
+<select id="slip"><option value="1">1% Hemat</option><option value="2" selected>2% Aman</option><option value="5">5% Agresif</option></select>
+<div id="calcInfo" class="status">Isi jumlah token.</div>
+<div class="row" style="margin-top:12px">
+<button id="buyBtn" class="btn btn-g">BUY MARKET</button>
+<button id="sellBtn" class="btn btn-r">SELL MARKET</button>
+</div>
+<div id="tradeLog" class="status">Siap.</div>
+<div class="row" style="margin-top:10px">
+<button id="refreshBtn" class="btn btn-d">↻ REFRESH</button>
+<button id="clearBtn" class="btn btn-d danger">HAPUS</button>
+</div>
+</div>
+</div>
+
+<script>
+const HIVE_API="https://api.hive.blog";
+const ENGINE_API="https://api.hive-engine.com/rpc/contracts";
+const STORAGE_KEY="hive_engine_market_settings_v1";
+hive.api.setOptions({url:HIVE_API});
+const $=id=>document.getElementById(id);
+let account=""; let activeKey=""; let ownedMap={}; let currentToken=""; let sellBook=[]; let buyBook=[]; let tokenPrecision=8; let mySwapHive=0; let myTokenBalance=0; let busy=false; let useKeychain=false;
+
+function saveLocal(){const data={username:account,token:currentToken,qty:$("qty").value,slip:$("slip").value};localStorage.setItem(STORAGE_KEY,JSON.stringify(data));}
+function loadLocal(){try{const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return; const data=JSON.parse(raw); if(data.username){$("user").value=data.username;} if(data.qty){$("qty").value=data.qty;} if(data.slip){$("slip").value=data.slip;}}catch(e){}}
+function getLocalData(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");}catch(e){return null;}}
+async function rpc(method,params){
+ const r=await fetch(ENGINE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",method,params,id:Date.now()})});
+ const d=await r.json(); if(d.error) throw new Error(d.error.message); return d.result;
+}
+async function loadBalances(){
+ const balances=await rpc("find",{contract:"tokens",table:"balances",query:{account},limit:1000});
+ ownedMap={}; (balances||[]).forEach(i=>{ownedMap[i.symbol]=parseFloat(i.balance)||0;});
+ mySwapHive=ownedMap["SWAP.HIVE"]||0;
+ const tokens=Object.entries(ownedMap).filter(([s])=>s!=="SWAP.HIVE").sort((a,b)=>b[1]-a[1]);
+ $("bals").innerHTML=tokens.length?tokens.map(i=>`<span class="pill">★ ${i[0]}: ${i[1]}</span>`).join(""):`<span class="pill">Tidak ada token</span>`;
+ let html=""; tokens.forEach(([s,b])=>{html+=`<option value="${s}">★ ${s} — ${b}</option>`;});
+ html+=`<option disabled>────────</option><option value="LEO">LEO</option><option value="VYB">VYB</option><option value="BEE">BEE</option><option value="POB">POB</option><option value="NEOXAG">NEOXAG</option>`;
+ $("tokenSelect").innerHTML=html;
+ const saved=getLocalData();
+ if(saved&&saved.token&&$("tokenSelect").querySelector(`option[value="${saved.token}"]`)){currentToken=saved.token;}else{currentToken=tokens[0]?.[0]||"VYB";}
+ $("tokenSelect").value=currentToken;
+}
+
+// ===== KEYCHAIN LOGIC YANG SUDAH SUKSES =====
+function isKC(){return typeof window.hive_keychain!=='undefined' && window.hive_keychain!==null;}
+function setDetect(t,ok){$("kcDetect").textContent=t; $("kcDetect").style.color=ok?"#00ff88":"#ff6b6b"; $("kcDetect").style.borderColor=ok?"#00ff88":"#ff6b6b";}
+function checkKC(){
+  if(isKC()){
+    setDetect("KEYCHAIN OK",true);
+    $("kcStatus").innerHTML=`<span class="success">✅ Keychain Terdeteksi</span>\nIsi username lalu TAP Login.`;
+    return true;
+  }else{
+    setDetect("NO KEYCHAIN",false);
+    $("kcStatus").innerHTML=`<span class="warning">Keychain tidak terdeteksi</span>\nBuka di APK Hive Keychain > Browser.`;
+    return false;
+  }
+}
+window.addEventListener('hive_keychain_ready', ()=>{ checkKC(); });
+let tries=0; let iv=setInterval(()=>{tries++; if(isKC()){clearInterval(iv); checkKC();} if(tries>20) clearInterval(iv);},300);
+setTimeout(checkKC,800);
+
+function loginKC(){
+  if(!isKC()){
+    alert("Hive Keychain tidak terdeteksi!\nBuka halaman ini di APLIKASI Hive Keychain > menu Browser bawah, bukan Chrome.");
+    checkKC(); return;
+  }
+  let username=$("user").value.trim().toLowerCase().replace(/^@/,"");
+  if(username.length<3){
+    let saved=getLocalData();
+    if(saved&&saved.username) username=saved.username;
+    else { username=prompt("Masukkan username Hive:"); if(!username) return; $("user").value=username; }
+  }
+  $("kcBtn").disabled=true; $("kcBtn").textContent="MENUNGGU KEYCHAIN...";
+  $("kcStatus").textContent="Meminta tanda tangan Posting ke Keychain @"+username+"...";
+  window.hive_keychain.requestSignBuffer(username, "login-hive-engine-"+Date.now(), "Posting", async function(res){
+    $("kcBtn").disabled=false; $("kcBtn").textContent="🔑 LOGIN KEYCHAIN";
+    if(res.success){
+      account=username; useKeychain=true; activeKey="";
+      $("kcStatus").innerHTML=`<span class="success">● LOGIN SUKSES</span> @${account}`;
+      $("info").innerHTML=`<span class="success">● TERHUBUNG VIA KEYCHAIN</span> @${account}`;
+      $("tradeCard").classList.remove("hidden");
+      try{ await loadBalances(); saveLocal(); await loadMarket(); $("info").innerHTML=`<span class="success">● KEYCHAIN CONNECTED</span> @${account}\nSWAP.HIVE: ${mySwapHive}`; }catch(e){$("info").textContent=e.message;}
+    }else{
+      $("kcStatus").innerHTML=`<span class="error">GAGAL: ${res.message}</span>`;
+    }
+  });
+}
+
+async function connectAccount(){
+ const username=$("user").value.trim().toLowerCase().replace(/^@/,""); const key=$("key").value.trim();
+ if(username.length<3){$("info").textContent="Username tidak valid";return;}
+ if(key.length<40){$("info").textContent="Active Key tidak valid, pakai Login Keychain saja";return;}
+ account=username; activeKey=key; useKeychain=false;
+ $("loadBtn").disabled=true; $("loadBtn").textContent="MENGHUBUNGKAN...";
+ try{ await loadBalances(); $("info").innerHTML=`<span class="success">● MANUAL CONNECTED</span> @${account}\nSWAP.HIVE: ${mySwapHive}`; $("tradeCard").classList.remove("hidden"); saveLocal(); await loadMarket(); }catch(e){$("info").innerHTML=`<span class="error">GAGAL</span>\n${e.message}`;}
+ finally{$("loadBtn").disabled=false; $("loadBtn").textContent="HUBUNGKAN MANUAL";}
+}
+
+async function loadMarket(){
+ if(!currentToken) return; $("pair").textContent="Mengambil order book...";
+ try{
+  const r=await Promise.all([
+   rpc("find",{contract:"market",table:"sellBook",query:{symbol:currentToken},limit:100,indexes:[{index:"priceDec",descending:false}]}),
+   rpc("find",{contract:"market",table:"buyBook",query:{symbol:currentToken},limit:100,indexes:[{index:"priceDec",descending:true}]}),
+   rpc("findOne",{contract:"tokens",table:"tokens",query:{symbol:currentToken}})
+  ]);
+  sellBook=r[0]||[]; buyBook=r[1]||[]; tokenPrecision=Number.isInteger(r[2]?.precision)?r[2].precision:8; myTokenBalance=ownedMap[currentToken]||0;
+  const ask=sellBook[0]?.price||"-"; const bid=buyBook[0]?.price||"-";
+  $("pair").textContent=`${currentToken}/SWAP.HIVE | Prec: ${tokenPrecision} | ASK: ${ask} | BID: ${bid} | Token: ${myTokenBalance} | HIVE: ${mySwapHive}`;
+  $("pairBadge").textContent=`${currentToken}/HIVE`; calculate();
+ }catch(e){$("pair").textContent="Gagal: "+e.message;}
+}
+function calculate(){
+ const qty=parseFloat($("qty").value)||0; if(!(qty>0)){$("calcInfo").textContent="Isi jumlah token.";return;}
+ const slip=(parseFloat($("slip").value)||0)/100; let rem=qty; let buyCost=0; let bl=0; let bLast=0;
+ for(const o of sellBook){if(rem<=0) break; const q=parseFloat(o.quantity)||0; const p=parseFloat(o.price)||0; if(q<=0||p<=0) continue; const take=Math.min(rem,q); buyCost+=take*p; rem-=take; bLast=p; bl++;}
+ const buyOk=rem<=0; const budget=buyCost*(1+slip); const avg=qty>0?buyCost/qty:0;
+ rem=qty; let sellVal=0; let sl=0; let sLast=0;
+ for(const o of buyBook){if(rem<=0) break; const q=parseFloat(o.quantity)||0; const p=parseFloat(o.price)||0; if(q<=0||p<=0) continue; const take=Math.min(rem,q); sellVal+=take*p; rem-=take; sLast=p; sl++;}
+ const sellOk=rem<=0; const sAvg=qty>0?sellVal/qty:0;
+ $("calcInfo").textContent=`BUY ${qty} ${currentToken}\nBiaya: ${buyCost.toFixed(8)} Avg: ${avg.toFixed(8)}\nBudget max ${ (slip*100).toFixed(0)}%: ${budget.toFixed(8)} | ${buyOk?"✅":"❌"}\nSaldo HIVE: ${mySwapHive} ${budget>mySwapHive?"❌ KURANG":"✅ CUKUP"}\n\nSELL ${qty}\nHasil: ${sellVal.toFixed(8)} Avg: ${sAvg.toFixed(8)} | ${sellOk?"✅":"❌"}\nSaldo Token: ${myTokenBalance}`;
+ $("calcInfo").dataset.need=buyCost; $("calcInfo").dataset.budget=budget; $("calcInfo").dataset.sellValue=sellVal; $("calcInfo").dataset.buyPossible=buyOk; $("calcInfo").dataset.sellPossible=sellOk; saveLocal();
+}
+function broadcast(jsonPayload, onSuccess, onError){
+  if(useKeychain && isKC()){
+    window.hive_keychain.requestCustomJson(account, "ssc-mainnet-hive", "Active", jsonPayload, "Hive Engine Market Trade", function(res){
+      if(res.success) onSuccess(res); else onError(new Error(res.message));
+    });
+  }else{
+    hive.broadcast.customJson(activeKey,[account],[],"ssc-mainnet-hive",jsonPayload,function(err,res){ if(err) onError(err); else onSuccess(res); });
+  }
+}
+
+// ===== FIX AUTO REFRESH POLLING =====
+async function pollAfterTx(oldHive, oldToken, tries){
+  if(tries>=7){
+    $("tradeLog").innerHTML += `\n\n<span class="success">✓ Selesai polling - refresh terakhir</span>`;
+    await loadBalances(); await loadMarket();
+    return;
+  }
+  tries++;
+  $("tradeLog").innerHTML = `⏳ Menunggu konfirmasi block ${tries}/7...\nSaldo lama HIVE: ${oldHive}\nToken: ${oldToken}\nCek lagi 3 detik...\n\nJika lama, Hive Engine kadang delay 10-15 detik.`;
+  setTimeout(async()=>{
+    try{
+      let beforeHive = mySwapHive;
+      await loadBalances();
+      // Jika saldo berubah dari saldo awal, anggap sukses
+      if(mySwapHive!==oldHive || (ownedMap[currentToken]||0)!==oldToken){
+        $("tradeLog").innerHTML = `<span class="success">✓ BALANCE UPDATED!</span>\nHIVE: ${oldHive} -> ${mySwapHive}\n${currentToken}: ${oldToken} -> ${ownedMap[currentToken]||0}\nReload market...`;
+        await loadMarket();
+      }else{
+        await pollAfterTx(oldHive, oldToken, tries);
+      }
+    }catch(e){
+      await pollAfterTx(oldHive, oldToken, tries);
+    }
+  },3000);
+}
+
+async function buyMarket(){
+ if(busy) return; const qty=parseFloat($("qty").value)||0; if(!(qty>0)){$("tradeLog").textContent="Isi jumlah";return;}
+ try{await loadMarket();}catch(e){$("tradeLog").textContent=e.message;return;}
+ const budget=parseFloat($("calcInfo").dataset.budget||0); const ok=$("calcInfo").dataset.buyPossible==="true";
+ if(!ok){$("tradeLog").textContent="Book ASK tidak cukup";return;} if(budget>mySwapHive){$("tradeLog").textContent=`Saldo HIVE kurang`;return;}
+ if(!confirm(`BUY ${qty} ${currentToken}\nBudget: ${budget.toFixed(8)} HIVE?`)) return;
+ busy=true; $("buyBtn").disabled=true; $("sellBtn").disabled=true;
+ const oldHive=mySwapHive; const oldToken=ownedMap[currentToken]||0;
+ const payload={symbol:currentToken,quantity:budget.toFixed(8)}; const json=JSON.stringify({contractName:"market",contractAction:"marketBuy",contractPayload:payload});
+ $("tradeLog").textContent=`BUY diproses via ${useKeychain?'KEYCHAIN':'MANUAL'}...`;
+ broadcast(json, async function(r){
+   $("tradeLog").innerHTML=`<span class="success">BUY TERKIRIM</span>\nTX: ${r.id||r.result?.id||'ok'}\nhttps://he.dtools.dev/tx/${r.id||''}\n\nMulai auto-refresh...`;
+   busy=false; $("buyBtn").disabled=false; $("sellBtn").disabled=false;
+   pollAfterTx(oldHive, oldToken, 0);
+ }, function(e){ $("tradeLog").innerHTML=`<span class="error">GAGAL</span>\n${e.message}`; busy=false; $("buyBtn").disabled=false; $("sellBtn").disabled=false; });
+}
+
+async function sellMarket(){
+ if(busy) return; const qty=parseFloat($("qty").value)||0; if(!(qty>0)){$("tradeLog").textContent="Isi jumlah";return;} if(qty>myTokenBalance){$("tradeLog").textContent="Saldo token kurang";return;}
+ try{await loadMarket();}catch(e){$("tradeLog").textContent=e.message;return;}
+ const ok=$("calcInfo").dataset.sellPossible==="true"; const exp=parseFloat($("calcInfo").dataset.sellValue||0);
+ if(!ok){$("tradeLog").textContent="Book BID kurang";return;} if(!confirm(`SELL ${qty} ${currentToken}\nEst: ${exp.toFixed(8)} HIVE?`)) return;
+ busy=true; $("buyBtn").disabled=true; $("sellBtn").disabled=true;
+ const oldHive=mySwapHive; const oldToken=ownedMap[currentToken]||0;
+ const quantity=qty.toFixed(tokenPrecision); const payload={symbol:currentToken,quantity}; const json=JSON.stringify({contractName:"market",contractAction:"marketSell",contractPayload:payload});
+ $("tradeLog").textContent=`SELL diproses via ${useKeychain?'KEYCHAIN':'MANUAL'}...`;
+ broadcast(json, async function(r){
+   $("tradeLog").innerHTML=`<span class="success">SELL TERKIRIM</span>\nTX: ${r.id||r.result?.id||'ok'}\n\nMulai auto-refresh...`;
+   busy=false; $("buyBtn").disabled=false; $("sellBtn").disabled=false;
+   pollAfterTx(oldHive, oldToken, 0);
+ }, function(e){ $("tradeLog").innerHTML=`<span class="error">GAGAL</span>\n${e.message}`; busy=false; $("buyBtn").disabled=false; $("sellBtn").disabled=false; });
+}
+
+function setMax(){
+ const slip=(parseFloat($("slip").value)||0)/100; let budget=mySwapHive/(1+slip); let amt=0;
+ for(const o of sellBook){if(budget<=0) break; const q=parseFloat(o.quantity)||0; const p=parseFloat(o.price)||0; if(q<=0||p<=0) continue; const cost=q*p; if(cost<=budget){amt+=q; budget-=cost;}else{amt+=budget/p; break;}}
+ $("qty").value=Math.floor(amt); calculate();
+}
+function clearLocal(){localStorage.removeItem(STORAGE_KEY); $("user").value=""; $("qty").value=""; $("key").value=""; account=""; activeKey=""; ownedMap={}; currentToken=""; useKeychain=false; $("tradeCard").classList.add("hidden"); $("info").textContent="Dihapus"; $("bals").innerHTML="";}
+
+$("loadBtn").onclick=connectAccount;
+$("tokenSelect").onchange=async function(){currentToken=this.value; saveLocal(); await loadMarket();};
+$("qty").oninput=calculate; $("slip").onchange=function(){saveLocal(); calculate();};
+$("btn100").onclick=()=>{$("qty").value=100; calculate();}; $("btn1k").onclick=()=>{$("qty").value=1000; calculate();}; $("maxBtn").onclick=setMax;
+$("buyBtn").onclick=buyMarket; $("sellBtn").onclick=sellMarket;
+$("refreshBtn").onclick=async function(){if(!account) return; try{await loadBalances(); await loadMarket(); $("tradeLog").textContent="Refreshed";}catch(e){$("tradeLog").textContent=e.message;}};
+$("clearBtn").onclick=()=>{if(confirm("Hapus?")) clearLocal();};
+loadLocal();
+</script>
+</body>
+</html>
