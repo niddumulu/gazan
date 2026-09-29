@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HIVE ENGINE - 0 POPUP MODE</title>
+<title>HIVE ENGINE - 0 POPUP FIXED</title>
 <script src="https://unpkg.com/@hiveio/hive-js@latest/dist/hive.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#080a0c;color:#e6e8ea;font-family:Inter,sans-serif}
-.app{max-width:480px;margin:auto;min-height:100vh;background:#080a0c}
+.app{max-width:480px;margin:auto;min-height:100vh}
 .card{background:#1c2126;border:1px solid #23282e;border-radius:18px;padding:16px;margin:12px}
 .btn{width:100%;padding:13px;border-radius:12px;border:0;font-weight:800;cursor:pointer}
 .btn-kc{background:linear-gradient(90deg,#00ff88,#00cc6a);color:#000}
@@ -17,29 +17,30 @@ body{margin:0;background:#080a0c;color:#e6e8ea;font-family:Inter,sans-serif}
 .btn-g{background:#00ff88;color:#000}
 .btn-r{background:#ff3b4a;color:#fff}
 input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#0d0f11;color:#fff;margin-top:6px;font-family:JetBrains Mono;font-size:12px}
-.status{padding:10px;border-radius:10px;background:#0d0f11;border:1px solid #222;margin-top:8px;font-size:11px;white-space:pre-wrap;font-family:JetBrains Mono}
+.status{padding:10px;border-radius:10px;background:#0d0f11;border:1px solid #222;margin-top:8px;font-size:11px;white-space:pre-wrap;font-family:JetBrains Mono;min-height:35px}
 .pill{background:#1e2429;border:1px solid #333;padding:4px 8px;border-radius:20px;font-size:11px;display:inline-block;margin:3px}
 .hidden{display:none!important}
-.warn-box{background:#2a1e0f;border:1px solid #5a3e0f;color:#ffcc66;padding:10px;border-radius:10px;font-size:11px;margin-top:8px;line-height:1.5}
+.warn{background:#2a1e0f;border:1px solid #5a3e0f;color:#ffcc66;padding:8px;border-radius:8px;font-size:11px;margin-top:8px}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="card">
-<h3 style="margin:0">0 POP-UP MODE ⚠️</h3>
-<div class="warn-box">⚠️ MODE BERESIKO: Active Private Key kamu akan disimpan di browser. Tidak ada pop-up Keychain lagi. JANGAN pakai di HP orang lain & JANGAN share link ini.</div>
+<h3 style="margin:0">0 POP-UP MODE ⚠️ FIXED</h3>
+<div id="kcDetect" style="font-size:10px;margin-top:4px;color:#888">Checking Keychain...</div>
+<div class="warn">Active key disimpan di browser = tanpa pop-up Keychain sama sekali. Jangan share.</div>
 
 <label>Username</label>
 <input id="user" placeholder="masabqory">
-<button class="btn btn-kc" onclick="loginKC()" style="margin-top:8px">🔑 LOGIN KEYCHAIN (AMBIL USERNAME)</button>
+<button class="btn btn-kc" onclick="loginKC()" id="kcBtn" style="margin-top:8px">🔑 LOGIN KEYCHAIN (TAP)</button>
+<div id="kcLog" class="status">Log login disini...</div>
 
-<label style="margin-top:12px">Active Private Key (5J... WAJIB untuk 0 popup)</label>
-<input id="key" type="password" placeholder="5J...">
-<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px"><input type="checkbox" id="saveKey" style="width:16px"> Simpan Active Key di browser (0 pop-up)</label>
-
-<button class="btn btn-d" onclick="saveAndConnect()" style="margin-top:10px">SIMPAN & HUBUNGKAN</button>
+<label style="margin-top:10px">Active Private Key (5J...)</label>
+<input id="key" type="password" placeholder="5Jxxxx">
+<div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px"><input type="checkbox" id="saveKey" style="width:16px" checked> Simpan untuk 0 pop-up</div>
+<button class="btn btn-d" onclick="saveAndConnect()" style="margin-top:8px">SIMPAN & HUBUNGKAN</button>
 <div id="info" class="status">Belum terhubung</div>
-<div id="bals" style="margin-top:8px"></div>
+<div id="bals"></div>
 </div>
 
 <div class="card hidden" id="tradeCard">
@@ -47,18 +48,18 @@ input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #333;ba
 <div id="pair" class="status">-</div>
 <input id="qty" type="number" placeholder="1000" style="margin-top:8px">
 <div style="display:flex;gap:6px;margin-top:6px">
-<button class="btn btn-d" onclick="document.getElementById('qty').value=100;calculate()">100</button>
-<button class="btn btn-d" onclick="document.getElementById('qty').value=1000;calculate()">1K</button>
+<button class="btn btn-d" onclick="$('qty').value=100;calculate()">100</button>
+<button class="btn btn-d" onclick="$('qty').value=1000;calculate()">1K</button>
 <button class="btn btn-d" onclick="setMax()">MAX</button>
 </div>
-<select id="slip" style="margin-top:8px"><option value="1">1%</option><option value="2" selected>2%</option><option value="5">5%</option></select>
+<select id="slip" style="margin-top:6px"><option value="1">1%</option><option value="2" selected>2%</option><option value="5">5%</option></select>
 <div id="calcInfo" class="status">-</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
 <button id="buyBtn" class="btn btn-g">BUY INSTANT</button>
 <button id="sellBtn" class="btn btn-r">SELL INSTANT</button>
 </div>
-<div id="tradeLog" class="status">Siap - 0 pop-up</div>
-<button class="btn btn-d" onclick="clearAll()" style="margin-top:8px;background:#3a1a1a">HAPUS SEMUA KEY DARI BROWSER</button>
+<div id="tradeLog" class="status">Siap</div>
+<button class="btn btn-d" onclick="clearAll()" style="margin-top:8px;background:#3a1a1a">HAPUS KEY</button>
 </div>
 </div>
 
@@ -67,44 +68,79 @@ const ENGINE_API="https://api.hive-engine.com/rpc/contracts";
 hive.api.setOptions({url:"https://api.hive.blog"});
 const $=id=>document.getElementById(id);
 let account="", activeKey="", ownedMap={}, currentToken="", sellBook=[], buyBook=[], tokenPrecision=8, mySwapHive=0, myTokenBalance=0, busy=false;
-const LS_USER="he_0popup_user", LS_KEY="he_0popup_akey", LS_SETTINGS="he_0popup_settings";
+const LS_USER="he_0popup_user", LS_KEY="he_0popup_akey", LS_SET="he_0popup_set";
 
-function saveLocal(){localStorage.setItem(LS_USER, account); localStorage.setItem(LS_SETTINGS, JSON.stringify({token:currentToken,qty:$("qty").value,slip:$("slip").value})); if($("saveKey").checked && activeKey){localStorage.setItem(LS_KEY, btoa(activeKey));}}
-function loadLocalSettings(){try{let s=JSON.parse(localStorage.getItem(LS_SETTINGS)||"{}"); if(s.qty) $("qty").value=s.qty; if(s.slip) $("slip").value=s.slip; return s;}catch(e){return {}}}
+function log(t){console.log(t); $("kcLog").textContent+="\n> "+t; $("kcLog").scrollTop=9999;}
+function isKC(){return typeof window.hive_keychain!=='undefined' && window.hive_keychain!==null;}
+function checkKC(){
+  log("checkKC typeof="+typeof window.hive_keychain);
+  if(isKC()){
+    $("kcDetect").textContent="✅ KEYCHAIN TERDETEKSI - "+Object.keys(window.hive_keychain).join(",");
+    $("kcDetect").style.color="#00ff88";
+    return true;
+  }else{
+    $("kcDetect").textContent="❌ TIDAK TERDETEKSI - buka di APK Keychain > Browser";
+    $("kcDetect").style.color="#ff6b6b";
+    return false;
+  }
+}
+window.addEventListener('hive_keychain_ready',()=>{log("EVENT hive_keychain_ready"); checkKC();});
+let c=0; let iv=setInterval(()=>{c++; if(isKC()){clearInterval(iv); checkKC();} if(c>20) clearInterval(iv);},300);
+setTimeout(checkKC,500);
+
+function saveLocal(){localStorage.setItem(LS_USER, account); localStorage.setItem(LS_SET, JSON.stringify({token:currentToken,qty:$("qty").value,slip:$("slip").value})); if($("saveKey").checked && activeKey) localStorage.setItem(LS_KEY, btoa(activeKey));}
 function getSavedKey(){try{let k=localStorage.getItem(LS_KEY); return k?atob(k):"";}catch(e){return "";}}
 
 async function rpc(m,p){let r=await fetch(ENGINE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",method:m,params:p,id:1})}); let j=await r.json(); if(j.error) throw new Error(j.error.message); return j.result;}
+
 async function loadBalances(){
  let balances=await rpc("find",{contract:"tokens",table:"balances",query:{account},limit:1000});
- ownedMap={}; (balances||[]).forEach(i=>ownedMap[i.symbol]=parseFloat(i.balance)||0);
+ ownedMap={}; balances.forEach(i=>ownedMap[i.symbol]=parseFloat(i.balance)||0);
  mySwapHive=ownedMap["SWAP.HIVE"]||0;
- $("bals").innerHTML=(balances||[]).slice(0,15).map(i=>`<span class="pill">${i.symbol}:${i.balance}</span>`).join("");
+ $("bals").innerHTML=balances.slice(0,12).map(i=>`<span class="pill">${i.symbol}:${i.balance}</span>`).join("");
  let tokens=Object.entries(ownedMap).filter(([s])=>s!=="SWAP.HIVE").sort((a,b)=>b[1]-a[1]);
  let html=""; tokens.forEach(([s,b])=>html+=`<option value="${s}">${s} - ${b}</option>`);
- html+=`<option disabled>---</option><option value="LEO">LEO</option><option value="VYB">VYB</option><option value="BEE">BEE</option><option value="POB">POB</option>`;
+ html+=`<option disabled>---</option><option value="LEO">LEO</option><option value="VYB">VYB</option><option value="BEE">BEE</option>`;
  $("tokenSelect").innerHTML=html;
- let saved=loadLocalSettings(); currentToken=saved.token||tokens[0]?.[0]||"VYB"; $("tokenSelect").value=currentToken;
- $("info").textContent=`Connected @${account} | HIVE:${mySwapHive} | MODE: 0 POP-UP`;
+ try{let set=JSON.parse(localStorage.getItem(LS_SET)||"{}"); currentToken=set.token||tokens[0]?.[0]||"VYB"; if(set.qty) $("qty").value=set.qty; if(set.slip) $("slip").value=set.slip;}catch(e){currentToken=tokens[0]?.[0]||"VYB";}
+ $("tokenSelect").value=currentToken;
+ $("info").textContent=`Connected @${account} HIVE:${mySwapHive} MODE 0 POPUP`;
 }
 
-function isKC(){return typeof window.hive_keychain!=='undefined'}
 function loginKC(){
- if(!isKC()){alert("Buka di APK Hive Keychain > Browser"); return;}
- let u=$("user").value.trim().toLowerCase(); if(!u) u=prompt("Username:"); if(!u) return;
- window.hive_keychain.requestSignBuffer(u, "login-"+Date.now(), "Posting", function(res){
-   if(res.success){ account=u; $("user").value=account; $("info").textContent="Username dapat @"+account+" - sekarang paste Active Key di bawah"; }
-   else alert("Gagal: "+res.message);
- });
+  log("Tombol LOGIN diklik!");
+  if(!isKC()){log("GAGAL: hive_keychain undefined"); alert("Buka di APK Hive Keychain > menu Browser bawah! Bukan Chrome."); checkKC(); return;}
+  let username=$("user").value.trim().toLowerCase().replace(/^@/,"");
+  if(username.length<3){username=prompt("Masukkan username Hive:"); if(!username) return; $("user").value=username;}
+  username=username.toLowerCase();
+  log("Mencoba requestSignBuffer user="+username);
+  $("kcBtn").disabled=true; $("kcBtn").textContent="MENUNGGU KEYCHAIN...";
+  // PAKAI KODE YANG SUDAH SUKSES TADI
+  window.hive_keychain.requestSignBuffer(username, "login-test-"+Date.now(), "Posting", function(res){
+    log("Callback signBuffer: "+JSON.stringify(res));
+    $("kcBtn").disabled=false; $("kcBtn").textContent="🔑 LOGIN KEYCHAIN (TAP)";
+    if(res.success){
+      account=username;
+      $("info").textContent="✅ LOGIN SUKSES @"+account+" - sekarang paste Active Key di bawah lalu SIMPAN & HUBUNGKAN";
+      log("SUKSES @"+account);
+      // auto load saved key if exists
+      let k=getSavedKey(); if(k){$("key").value=k; activeKey=k;}
+    }else{
+      log("GAGAL sign: "+res.message);
+      $("info").textContent="GAGAL: "+res.message;
+    }
+  });
 }
 
 async function saveAndConnect(){
  let u=$("user").value.trim().toLowerCase().replace(/^@/,""); let k=$("key").value.trim();
- if(!u) u=localStorage.getItem(LS_USER)||""; if(!u){$("info").textContent="Isi username"; return;}
- let savedKey=getSavedKey(); if(!k) k=savedKey;
- if(k.length<40){$("info").textContent="Active Key wajib 5J... untuk 0 popup"; return;}
+ if(!u) u=localStorage.getItem(LS_USER)||account; if(!u){$("info").textContent="Isi username"; return;}
+ let saved=getSavedKey(); if(!k) k=saved;
+ if(k.length<40){$("info").textContent="Active Key 5J... wajib untuk 0 popup"; return;}
  account=u; activeKey=k; saveLocal();
- $("info").textContent="Menghubungkan..."; $("tradeCard").classList.remove("hidden");
- try{ await loadBalances(); await loadMarket(); }catch(e){$("info").textContent=e.message;}
+ $("tradeCard").classList.remove("hidden");
+ $("info").textContent="Menghubungkan @"+account+"...";
+ try{await loadBalances(); await loadMarket();}catch(e){$("info").textContent=e.message;}
 }
 
 async function loadMarket(){
@@ -121,9 +157,9 @@ async function loadMarket(){
 function calculate(){
  let qty=parseFloat($("qty").value)||0; if(!qty){$("calcInfo").textContent="Isi qty"; return;}
  let slip=parseFloat($("slip").value)/100; let rem=qty; let cost=0;
- for(let o of sellBook){if(rem<=0) break; let q=parseFloat(o.quantity), p=parseFloat(o.price); cost+=Math.min(rem,q)*p; rem-=Math.min(rem,q);}
+ for(let o of sellBook){if(rem<=0) break; let q=parseFloat(o.quantity), p=parseFloat(o.price); let take=Math.min(rem,q); cost+=take*p; rem-=take;}
  let budget=cost*(1+slip); let ok=rem<=0;
- $("calcInfo").textContent=`BUY ${qty} cost ${cost.toFixed(8)} budget ${budget.toFixed(8)} ${ok?"✅":"❌"} | HIVE ${mySwapHive}`;
+ $("calcInfo").textContent=`BUY ${qty} cost ${cost.toFixed(8)} budget ${budget.toFixed(8)} ${ok?"✅":"❌"}`;
  $("calcInfo").dataset.budget=budget; $("calcInfo").dataset.ok=ok;
 }
 function setMax(){
@@ -133,12 +169,11 @@ function setMax(){
 }
 async function pollAfterTx(oldHive, oldToken, tries){
  if(tries>=7){await loadBalances(); await loadMarket(); return;}
- tries++; $("tradeLog").textContent=`⏳ Block ${tries}/7 HIVE ${oldHive} -> ${mySwapHive}...`;
- setTimeout(async()=>{let prev=mySwapHive; await loadBalances(); if(mySwapHive!==oldHive || (ownedMap[currentToken]||0)!==oldToken){$("tradeLog").innerHTML=`<span style="color:#00ff88">✓ UPDATED</span> HIVE ${oldHive}->${mySwapHive} ${currentToken} ${oldToken}->${ownedMap[currentToken]||0}`; await loadMarket();}else pollAfterTx(oldHive, oldToken, tries);},3000);
+ tries++; $("tradeLog").textContent=`⏳ Block ${tries}/7 HIVE ${oldHive}->${mySwapHive}...`;
+ setTimeout(async()=>{await loadBalances(); if(mySwapHive!==oldHive || (ownedMap[currentToken]||0)!==oldToken){$("tradeLog").innerHTML=`<span style="color:#00ff88">✓ UPDATED</span> HIVE ${oldHive}->${mySwapHive}`; await loadMarket();}else pollAfterTx(oldHive, oldToken, tries);},3000);
 }
 function doBroadcast(jsonPayload){
  return new Promise((resolve,reject)=>{
-   // 0 POPUP - langsung pakai activeKey dari localStorage, tanpa keychain
    hive.broadcast.customJson(activeKey,[account],[],"ssc-mainnet-hive",jsonPayload,function(err,res){ if(err) reject(err); else resolve(res); });
  });
 }
@@ -146,12 +181,11 @@ async function buyMarket(){
  if(busy) return; let qty=parseFloat($("qty").value)||0; if(!qty) return;
  let budget=parseFloat($("calcInfo").dataset.budget||0); let ok=$("calcInfo").dataset.ok==="true";
  if(!ok){$("tradeLog").textContent="Book kurang"; return;} if(budget>mySwapHive){$("tradeLog").textContent="HIVE kurang"; return;}
- // TANPA CONFIRM - langsung gas
  busy=true; $("buyBtn").disabled=true; $("sellBtn").disabled=true;
  let oldHive=mySwapHive, oldToken=ownedMap[currentToken]||0;
  let payload={symbol:currentToken,quantity:budget.toFixed(8)}; let json=JSON.stringify({contractName:"market",contractAction:"marketBuy",contractPayload:payload});
- $("tradeLog").textContent=`BUY ${qty} ${currentToken} sending... TANPA POPUP`;
- try{let r=await doBroadcast(json); $("tradeLog").innerHTML=`<span style="color:#00ff88">BUY TERKIRIM</span> ${r.id||'ok'} - polling...`; pollAfterTx(oldHive, oldToken, 0);}catch(e){$("tradeLog").textContent="GAGAL: "+(e.message||JSON.stringify(e));}
+ $("tradeLog").textContent=`BUY ${qty} sending 0 popup...`;
+ try{let r=await doBroadcast(json); $("tradeLog").innerHTML=`<span style="color:#00ff88">BUY TERKIRIM</span> ${r.id||'ok'}`; pollAfterTx(oldHive, oldToken, 0);}catch(e){$("tradeLog").textContent="GAGAL: "+(e.message||JSON.stringify(e));}
  finally{busy=false; $("buyBtn").disabled=false; $("sellBtn").disabled=false;}
 }
 async function sellMarket(){
@@ -160,22 +194,18 @@ async function sellMarket(){
  busy=true; $("buyBtn").disabled=true; $("sellBtn").disabled=true;
  let oldHive=mySwapHive, oldToken=ownedMap[currentToken]||0;
  let payload={symbol:currentToken,quantity}; let json=JSON.stringify({contractName:"market",contractAction:"marketSell",contractPayload:payload});
- $("tradeLog").textContent=`SELL ${qty} sending... TANPA POPUP`;
- try{let r=await doBroadcast(json); $("tradeLog").innerHTML=`<span style="color:#00ff88">SELL TERKIRIM</span> ${r.id||'ok'} - polling...`; pollAfterTx(oldHive, oldToken, 0);}catch(e){$("tradeLog").textContent="GAGAL: "+(e.message||JSON.stringify(e));}
+ $("tradeLog").textContent=`SELL ${qty} sending 0 popup...`;
+ try{let r=await doBroadcast(json); $("tradeLog").innerHTML=`<span style="color:#00ff88">SELL TERKIRIM</span> ${r.id||'ok'}`; pollAfterTx(oldHive, oldToken, 0);}catch(e){$("tradeLog").textContent="GAGAL: "+(e.message||JSON.stringify(e));}
  finally{busy=false; $("buyBtn").disabled=false; $("sellBtn").disabled=false;}
 }
-function clearAll(){if(confirm("Hapus semua key dari browser?")){localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_USER); localStorage.removeItem(LS_SETTINGS); $("key").value=""; $("user").value=""; alert("Terhapus"); location.reload();}}
-
+function clearAll(){if(confirm("Hapus key?")){localStorage.removeItem(LS_KEY); localStorage.removeItem(LS_USER); localStorage.removeItem(LS_SET); location.reload();}}
 $("tokenSelect").onchange=async function(){currentToken=this.value; saveLocal(); await loadMarket();};
 $("qty").oninput=calculate; $("slip").onchange=calculate;
 $("buyBtn").onclick=buyMarket; $("sellBtn").onclick=sellMarket;
-
-// auto load jika sudah pernah simpan
 window.onload=async()=>{
- loadLocalSettings();
  let u=localStorage.getItem(LS_USER); let k=getSavedKey();
- if(u){$("user").value=u; account=u;}
- if(k){$("key").value=k; activeKey=k; $("saveKey").checked=true; $("info").textContent="Key tersimpan ditemukan @"+u+" - klik SIMPAN & HUBUNGKAN untuk 0 popup"; $("tradeCard").classList.remove("hidden"); try{await loadBalances(); await loadMarket();}catch(e){}}
+ if(u){$("user").value=u; account=u; log("Found saved user @"+u);}
+ if(k){$("key").value=k; activeKey=k; $("info").textContent="Key tersimpan ada @"+u+" - klik SIMPAN & HUBUNGKAN"; $("tradeCard").classList.remove("hidden"); try{await loadBalances(); await loadMarket();}catch(e){}}
 };
 </script>
 </body>
