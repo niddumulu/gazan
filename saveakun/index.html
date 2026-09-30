@@ -3,227 +3,195 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>V1.4 - HIVE VAULT EDIT FIX</title>
+<title>V1.5.1 - VAULT RC+SALDO FIX IMPORT</title>
 <script src="https://unpkg.com/@hiveio/hive-js@0.8.13/dist/hive.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#080a0c;color:#e6e8ea;font-family:'Inter',sans-serif}
-.app{max-width:940px;margin:auto}
-.header{padding:16px;position:sticky;top:0;background:rgba(8,10,12,.97);backdrop-filter:blur(12px);border-bottom:1px solid #1a1e22;z-index:10;display:flex;justify-content:space-between;align-items:center}
+.app{max-width:1000px;margin:auto}.header{padding:16px;position:sticky;top:0;background:rgba(8,10,12,.97);backdrop-filter:blur(12px);border-bottom:1px solid #1a1e22;z-index:10;display:flex;justify-content:space-between;align-items:center}
 .ver{font-family:'JetBrains Mono';font-size:10px;background:#00ff88;color:#000;padding:4px 8px;border-radius:20px;font-weight:800}
 .card{background:#161a1e;border:1px solid #23282e;border-radius:20px;padding:16px;margin:12px}
 label{font-size:10px;color:#7a7f85;font-weight:800;letter-spacing:.6px;display:block;margin:8px 0 6px}
 input,textarea{width:100%;padding:13px;border-radius:12px;border:1px solid #2a2f35;background:#0d0f11;color:#fff;outline:none;font-family:'JetBrains Mono',monospace;font-size:11px}
-input.editing{border-color:#ffd166;background:#1a1a0f}
 .btn{padding:11px 14px;border-radius:12px;border:0;font-weight:800;cursor:pointer;font-size:12px}.btn-g{background:#00ff88;color:#000}.btn-d{background:#1e242a;color:#c0c6cc;border:1px solid #2a323a}.btn-r{background:#1c1214;color:#ff6b7a;border:1px solid #3a2025}.btn-y{background:#1e1e12;color:#ffd166;border:1px solid #3a3520}.btn-b{background:#121a22;color:#7ec8ff;border:1px solid #233444}
 .badge{font-size:10px;padding:5px 10px;border-radius:20px;background:#0d0f11;border:1px solid #2a2f35;display:inline-block;margin:2px}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-.table-wrap{overflow:auto;max-height:70vh;margin-top:10px;border:1px solid #1e2328;border-radius:14px}
-table{width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono'}th{color:#7a7f85;text-align:left;padding:12px 8px;border-bottom:1px solid #23282e;background:#161a1e;position:sticky;top:0;font-size:10px}td{padding:12px 8px;border-bottom:1px solid #15181b;vertical-align:top}
-.preview{padding:12px;border-radius:14px;background:#0d0f11;border:1px dashed #2a5a40;margin-top:10px;font-size:11px;white-space:pre-wrap;display:none}.preview.show{display:block}
+.row{display:flex;gap:8px;flex-wrap:wrap}.table-wrap{overflow:auto;max-height:75vh;margin-top:10px;border:1px solid #1e2328;border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono'}th{color:#7a7f85;text-align:left;padding:12px 8px;border-bottom:1px solid #23282e;background:#161a1e;position:sticky;top:0;font-size:10px;white-space:nowrap}td{padding:12px 8px;border-bottom:1px solid #15181b;vertical-align:top;white-space:nowrap}
+.preview{padding:12px;border-radius:14px;background:#0d0f11;border:1px dashed #2a5a40;margin-top:10px;font-size:11px;white-space:pre-wrap}
 .ok{color:#00ff88;font-weight:800}.err{color:#ff6b7a;font-weight:800}.wait{color:#ffd166}
+.progress{height:6px;background:#1a1e22;border-radius:10px;overflow:hidden;margin-top:10px}.bar{height:100%;background:#00ff88;width:0%;transition:.3s}
 .footer{text-align:center;padding:16px;font-size:9px;color:#4a5056;font-family:'JetBrains Mono'}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="header">
-<div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;background:#00ff88;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:900">H</div><div><div style="display:flex;align-items:center;gap:8px"><b>HIVE VAULT</b><span class="ver">V1.4 EDIT FIX</span></div><small style="color:#7a7f85;font-size:10px">EDIT USERNAME BISA + VALIDATOR</small></div></div>
-<button class="btn btn-d" onclick="exportJson()">EXPORT</button>
+<div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;background:#00ff88;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:900">H</div><div><div style="display:flex;align-items:center;gap:8px"><b>HIVE VAULT</b><span class="ver">V1.5.1 FIX IMPORT</span></div><small style="color:#7a7f85;font-size:10px">RC+SALDO + IMPORT BALIK</small></div></div>
+<div style="display:flex;gap:6px"><button class="btn btn-d" onclick="$('fileImport').click()">📥 IMPORT</button><button class="btn btn-y" onclick="exportJson()">EXPORT</button></div>
 </div>
 
 <div class="card">
 <label style="color:#00ff88">📥 PASTE FORMAT PANJANG</label>
-<textarea id="smartInput" rows="6" placeholder="Paste format panjang..."></textarea>
-<div id="smartPreview" class="preview"></div>
-<div class="row" style="margin-top:10px"><button class="btn btn-g" style="flex:1" onclick="parseAndFill()">🔍 DETEKSI & ISI</button><button class="btn btn-d" onclick="$('smartInput').value='';$('smartPreview').classList.remove('show')">CLEAR</button></div>
+<textarea id="smartInput" rows="5" placeholder="Paste format akun..."></textarea>
+<div id="smartPreview" class="preview" style="display:none"></div>
+<div class="row" style="margin-top:10px"><button class="btn btn-g" style="flex:1" onclick="parseAndFill()">🔍 DETEKSI & ISI</button><button class="btn btn-d" onclick="$('smartInput').value=''">CLEAR</button></div>
 <div style="height:1px;background:#23282e;margin:14px 0"></div>
-
-<label>USERNAME * (bisa diedit sekarang)</label>
-<input id="inpUser" placeholder="myusername">
-<div id="usernameHint" style="font-size:10px;color:#ffd166;margin-top:4px;display:none">⚠️ Mode EDIT: kamu sedang ganti username dari <b id="oldName"></b> → ketik username baru di atas</div>
-
+<label>USERNAME *</label><input id="inpUser">
 <label>OWNER</label><div style="display:flex;gap:6px"><input id="inpOwner" type="password"><button class="btn btn-d" onclick="toggle('inpOwner')">👁</button></div>
 <label>ACTIVE</label><div style="display:flex;gap:6px"><input id="inpActive" type="password"><button class="btn btn-d" onclick="toggle('inpActive')">👁</button></div>
 <label>POSTING</label><div style="display:flex;gap:6px"><input id="inpPost" type="password"><button class="btn btn-d" onclick="toggle('inpPost')">👁</button></div>
 <label>MEMO</label><input id="inpMemo"><label>RECOVERY</label><input id="inpRecovery">
-
 <div class="row" style="margin-top:12px"><button id="btnSave" class="btn btn-g" style="flex:1">💾 SIMPAN BARU</button><button id="btnCancel" class="btn btn-r" style="display:none" onclick="cancelEdit()">BATAL EDIT</button><button class="btn btn-d" onclick="clearForm()">RESET</button></div>
-<div id="editInfo" class="badge" style="display:none;margin-top:8px;background:#1e1e12;color:#ffd166">Mode EDIT</div>
+<div id="editInfo" class="badge" style="display:none;margin-top:8px;background:#1e1e12;color:#ffd166"></div>
+
+<div style="margin-top:14px;padding-top:14px;border-top:1px solid #23282e">
+<label>IMPORT / EXPORT V1.5.1</label>
+<div class="row"><button class="btn btn-y" onclick="exportJson()" style="flex:1">📤 EXPORT JSON</button><button class="btn btn-d" onclick="$('fileImport').click()" style="flex:1">📥 IMPORT FILE JSON</button><button class="btn btn-r" onclick="wipeAll()" style="flex:1">🗑 HAPUS SEMUA</button></div>
+<input type="file" id="fileImport" accept=".json" style="display:none">
+<textarea id="importPreview" rows="3" placeholder="Atau paste JSON disini lalu klik IMPORT TEXT..." style="margin-top:8px"></textarea>
+<button class="btn btn-b" style="width:100%;margin-top:6px" onclick="importFromText()">📄 IMPORT DARI TEXTAREA</button>
+</div>
 </div>
 
 <div class="card">
 <div style="display:flex;justify-content:space-between"><label style="margin:0">VAULT - DAFTAR AKUN</label><span id="countBadge" class="badge">0 akun</span></div>
-<input id="searchInput" placeholder="🔎 Cari username..." style="margin-top:10px">
+<input id="searchInput" placeholder="🔎 Cari..." style="margin-top:10px">
 <div class="table-wrap"><table><thead><tr><th>#</th><th>USER</th><th>KEYS</th><th>AKSI</th></tr></thead><tbody id="tblBody"></tbody></table></div>
-<div class="row" style="margin-top:10px"><button class="btn btn-g" onclick="copyUsernames()">📋 COPY USERNAME</button><button class="btn btn-y" onclick="exportJson()">EXPORT</button><button class="btn btn-d" onclick="$('fileImport').click()">IMPORT</button><input type="file" id="fileImport" accept=".json" style="display:none"></div>
+<div class="row" style="margin-top:10px"><button class="btn btn-g" onclick="copyUsernames()">📋 COPY USERNAME KE V6.0</button><button class="btn btn-y" onclick="exportJson()">📤 EXPORT</button><button class="btn btn-d" onclick="$('fileImport').click()">📥 IMPORT</button></div>
 </div>
 
 <div class="card" style="border-color:#2a5a40">
-<div style="display:flex;justify-content:space-between;align-items:center"><b>VALIDATOR POSTING & ACTIVE KEY</b><span id="valCount" class="badge">0</span></div>
-<div class="row" style="margin-top:12px"><button class="btn btn-b" style="flex:1" onclick="validateAll()">🔍 CEK SEMUA</button><button class="btn btn-d" onclick="clearValidation()">CLEAR</button></div>
-<div id="valLog" class="preview show" style="margin-top:10px">Belum dicek.</div>
-<div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>#</th><th>USERNAME</th><th>POSTING</th><th>ACTIVE</th><th>AKSI</th></tr></thead><tbody id="valBody"></tbody></table></div>
+<div style="display:flex;justify-content:space-between;align-items:center"><b>V1.5.1 VALIDATOR 2 TAHAP</b><span id="valCount" class="badge">0 akun</span></div>
+<div class="progress"><div id="bar" class="bar"></div></div>
+<div class="row" style="margin-top:12px"><button id="btnCheck" class="btn btn-b" style="flex:1" onclick="runFullCheck()">🔍 CEK KEY + REKAP RC & SALDO</button><button class="btn btn-d" onclick="clearValidation()">CLEAR</button></div>
+<div id="valLog" class="preview" style="margin-top:10px;max-height:120px;overflow:auto">Siap.</div>
+<div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>#</th><th>USERNAME</th><th>POSTING</th><th>ACTIVE</th><th>RC %</th><th>HIVE</th><th>HBD</th><th>HP</th><th>AKSI</th></tr></thead><tbody id="valBody"></tbody></table></div>
 </div>
 
-<div class="footer">V1.4 EDIT FIX • USERNAME BISA DIEDIT • FIX DATA HILANG</div>
+<div class="footer">V1.5.1 FIX IMPORT • IMPORT FILE + TEXTAREA BALIK • RC+SALDO TETAP</div>
 </div>
 
 <script>
 const LS_KEY="hive_vault_accounts_v12";
 const $=id=>document.getElementById(id);
 let accounts=[], editIndex=-1, editOriginalName="", validationResults={};
-
 function toggle(id){ let el=$(id); el.type=el.type==="password"?"text":"password"; }
 function load(){ try{accounts=JSON.parse(localStorage.getItem(LS_KEY)||"[]"); }catch{accounts=[];} render(); }
 function save(){ localStorage.setItem(LS_KEY, JSON.stringify(accounts)); }
-function clearForm(){
-  ["inpUser","inpOwner","inpActive","inpPost","inpMemo","inpRecovery"].forEach(id=>{ $(id).value=""; $(id).classList.remove("editing"); });
-  editIndex=-1; editOriginalName=""; $("btnSave").textContent="💾 SIMPAN BARU"; $("editInfo").style.display="none"; $("btnCancel").style.display="none"; $("usernameHint").style.display="none";
-}
+function clearForm(){ ["inpUser","inpOwner","inpActive","inpPost","inpMemo","inpRecovery"].forEach(id=>{ $(id).value=""; }); editIndex=-1; editOriginalName=""; $("btnSave").textContent="💾 SIMPAN BARU"; $("editInfo").style.display="none"; $("btnCancel").style.display="none"; }
 function cancelEdit(){ clearForm(); }
-
 function parseHiveBlock(text){
   let lines=text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l);
   let result={username:"", owner:"", active:"", posting:"", memo:"", recovery:""};
   for(let l of lines){ let low=l.toLowerCase(); if(/^[a-z0-9\-\.]{3,16}$/.test(low) &&!l.startsWith("5") &&!low.includes("key") &&!low.includes("password")){ result.username=low; break; } }
   if(!result.username && lines.length) result.username=lines[0].toLowerCase().split(/\s+/)[0];
-  let wifRegex=/5[A-HJ-NP-Za-km-z1-9]{50,51}/g;
-  let lowerText=text.toLowerCase();
-  function extractAfter(label){ let idx=lowerText.indexOf(label); if(idx===-1) return ""; let sub=text.slice(idx, idx+250); let m=sub.match(wifRegex); return m?m[0]:""; }
+  let wifRegex=/5[A-HJ-NP-Za-km-z1-9]{50,51}/g; let lower=text.toLowerCase();
+  function extractAfter(label){ let idx=lower.indexOf(label); if(idx===-1) return ""; let sub=text.slice(idx, idx+250); let m=sub.match(wifRegex); return m?m[0]:""; }
   result.owner=extractAfter("owner key")||""; result.active=extractAfter("active key")||""; result.posting=extractAfter("posting key")||"";
   let memoCandidate=lines.find(l=>l.length>30 &&!l.startsWith("5") && l!==result.username &&!l.toLowerCase().includes("key"));
   if(memoCandidate) result.memo=memoCandidate;
-  let recMatch=text.match(/recovery[^\n]*\n*\s*([A-Za-z0-9]{15,})/i);
-  if(recMatch) result.recovery=recMatch[1];
+  let recMatch=text.match(/recovery[^\n]*\n*\s*([A-Za-z0-9]{15,})/i); if(recMatch) result.recovery=recMatch[1];
   return result;
 }
-function parseAndFill(){
-  let txt=$("smartInput").value.trim(); if(!txt){ alert("Paste dulu"); return; }
-  let p=parseHiveBlock(txt);
-  $("inpUser").value=p.username||""; $("inpOwner").value=p.owner||""; $("inpActive").value=p.active||""; $("inpPost").value=p.posting||""; $("inpMemo").value=p.memo||""; $("inpRecovery").value=p.recovery||"";
-  $("smartPreview").textContent=`USERNAME: ${p.username}\nOWNER: ${p.owner?"OK":"-"}\nACTIVE: ${p.active?"OK":"-"}\nPOSTING: ${p.posting?"OK":"-"}`; $("smartPreview").classList.add("show");
-}
-
+function parseAndFill(){ let txt=$("smartInput").value.trim(); if(!txt) return; let p=parseHiveBlock(txt); $("inpUser").value=p.username||""; $("inpOwner").value=p.owner||""; $("inpActive").value=p.active||""; $("inpPost").value=p.posting||""; $("inpMemo").value=p.memo||""; $("inpRecovery").value=p.recovery||""; $("smartPreview").textContent=`USERNAME: ${p.username}\nACTIVE: ${p.active?"OK":"-"}\nPOSTING: ${p.posting?"OK":"-"}`; $("smartPreview").style.display="block"; }
 function render(){
   let q=($("searchInput").value||"").toLowerCase();
   let filtered=accounts.map((a,i)=>({...a,_idx:i})).filter(a=>!q || a.username.includes(q));
   let tbody=$("tblBody"); tbody.innerHTML="";
-  filtered.forEach((a,i)=>{ let keys=[]; if(a.owner) keys.push("owner"); if(a.active) keys.push("active"); if(a.posting) keys.push("posting"); let tr=document.createElement("tr"); tr.innerHTML=`<td>${i+1}</td><td><b>${a.username}</b><div style="font-size:9px;color:#7a7f85">${keys.join(" • ")||"username only"}</div></td><td>${keys.join(", ")||"-"}</td><td><div style="display:flex;gap:4px"><button class="btn btn-d" style="padding:6px 8px;font-size:10px" onclick="editAcc(${a._idx})">EDIT</button><button class="btn btn-r" style="padding:6px 8px;font-size:10px" onclick="delAcc(${a._idx})">HAPUS</button></div></td>`; tbody.appendChild(tr); });
-  $("countBadge").textContent=`${accounts.length} akun`;
-  renderValidator();
+  filtered.forEach((a,i)=>{ let keys=[]; if(a.owner) keys.push("owner"); if(a.active) keys.push("active"); if(a.posting) keys.push("posting"); let tr=document.createElement("tr"); tr.innerHTML=`<td>${i+1}</td><td><b>${a.username}</b></td><td>${keys.join(", ")||"-"}</td><td><div style="display:flex;gap:4px"><button class="btn btn-d" style="padding:6px 8px;font-size:10px" onclick="editAcc(${a._idx})">EDIT</button><button class="btn btn-r" style="padding:6px 8px;font-size:10px" onclick="delAcc(${a._idx})">HAPUS</button></div></td>`; tbody.appendChild(tr); });
+  $("countBadge").textContent=`${accounts.length} akun`; renderValidatorTable();
 }
-
-// === FIX UTAMA DISINI ===
 $("btnSave").onclick=()=>{
-  let newUsername=$("inpUser").value.trim().toLowerCase();
-  if(!newUsername || newUsername.length<3){ alert("Username minimal 3"); return; }
-  let data={username:newUsername, owner:$("inpOwner").value.trim(), active:$("inpActive").value.trim(), posting:$("inpPost").value.trim(), memo:$("inpMemo").value.trim(), recovery:$("inpRecovery").value.trim(), updated:Date.now()};
-
+  let newU=$("inpUser").value.trim().toLowerCase(); if(!newU || newU.length<3){ alert("Username minimal 3"); return; }
+  let data={username:newU, owner:$("inpOwner").value.trim(), active:$("inpActive").value.trim(), posting:$("inpPost").value.trim(), memo:$("inpMemo").value.trim(), recovery:$("inpRecovery").value.trim(), updated:Date.now()};
   if(editIndex>=0){
-    // MODE EDIT: boleh ganti username
-    let oldUsername=editOriginalName;
-    if(newUsername!==oldUsername){
-      // cek apakah username baru sudah ada di akun lain
-      let dupIdx=accounts.findIndex((a,i)=>a.username===newUsername && i!==editIndex);
-      if(dupIdx>=0){
-        if(!confirm(`Username baru ${newUsername} sudah ada. Timpa akun ${newUsername} yang lama?`)){
-          return;
-        }
-        // hapus duplikat dulu
-        accounts.splice(dupIdx,1);
-        if(dupIdx<editIndex) editIndex--; // adjust index setelah hapus
-      }
-      // update
-      accounts[editIndex]=data;
-      alert(`Username diubah: ${oldUsername} → ${newUsername}. Data lain tetap aman.`);
-    } else {
-      // username sama, update biasa
-      accounts[editIndex]=data;
+    let oldU=editOriginalName;
+    if(newU!==oldU){
+      let dup=accounts.findIndex((a,i)=>a.username===newU && i!==editIndex);
+      if(dup>=0){ if(!confirm(`Username ${newU} sudah ada, timpa?`)) return; accounts.splice(dup,1); if(dup<editIndex) editIndex--; }
     }
+    accounts[editIndex]=data;
   } else {
-    // MODE ADD BARU
-    let idx=accounts.findIndex(a=>a.username===newUsername);
-    if(idx>=0){
-      if(!confirm(newUsername+" sudah ada, update?")) return;
-      accounts[idx]=data;
-    } else {
-      accounts.push(data);
-    }
+    let idx=accounts.findIndex(a=>a.username===newU);
+    if(idx>=0){ if(!confirm(newU+" sudah ada, update?")) return; accounts[idx]=data; } else accounts.push(data);
   }
   save(); render(); clearForm();
 };
-
-function editAcc(i){
-  let a=accounts[i];
-  $("inpUser").value=a.username;
-  $("inpOwner").value=a.owner||""; $("inpActive").value=a.active||""; $("inpPost").value=a.posting||""; $("inpMemo").value=a.memo||""; $("inpRecovery").value=a.recovery||"";
-  editIndex=i; editOriginalName=a.username;
-  $("inpUser").classList.add("editing");
-  $("btnSave").textContent=`💾 UPDATE ${a.username} (bisa ganti username)`;
-  $("editInfo").textContent=`Mode EDIT: ${a.username} - sekarang username BISA diganti`; $("editInfo").style.display="inline-block";
-  $("btnCancel").style.display="inline-block";
-  $("oldName").textContent=a.username; $("usernameHint").style.display="block";
-  // JANGAN DISABLE lagi!
-  window.scrollTo({top:0,behavior:"smooth"});
-}
+function editAcc(i){ let a=accounts[i]; $("inpUser").value=a.username; $("inpOwner").value=a.owner||""; $("inpActive").value=a.active||""; $("inpPost").value=a.posting||""; $("inpMemo").value=a.memo||""; $("inpRecovery").value=a.recovery||""; editIndex=i; editOriginalName=a.username; $("btnSave").textContent=`💾 UPDATE ${a.username}`; $("editInfo").textContent=`EDIT: ${a.username} - username BISA diganti`; $("editInfo").style.display="inline-block"; $("btnCancel").style.display="inline-block"; window.scrollTo({top:0,behavior:"smooth"}); }
 function delAcc(i){ if(confirm(`Hapus ${accounts[i].username}?`)){ accounts.splice(i,1); save(); render(); if(editIndex===i) clearForm(); } }
-function exportJson(){ if(!accounts.length){ alert("Kosong"); return; } let blob=new Blob([JSON.stringify(accounts,null,2)],{type:"application/json"}); let url=URL.createObjectURL(blob); let a=document.createElement("a"); a.href=url; a.download=`hive-vault-v14-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url); }
-$("fileImport").addEventListener("change",async(e)=>{ let f=e.target.files[0]; if(!f) return; let txt=await f.text(); try{ let arr=JSON.parse(txt); let map=new Map(accounts.map(a=>[a.username,a])); arr.filter(x=>x.username).forEach(v=>{ let u=String(v.username).toLowerCase().trim(); map.set(u,{username:u, owner:String(v.owner||"").trim(), active:String(v.active||"").trim(), posting:String(v.posting||"").trim(), memo:String(v.memo||"").trim(), recovery:String(v.recovery||"").trim(), updated:Date.now()}); }); accounts=[...map.values()]; save(); render(); }catch{ alert("JSON invalid"); } e.target.value=""; });
+function wipeAll(){ if(confirm("Hapus SEMUA akun?")){ accounts=[]; save(); render(); } }
+function exportJson(){ if(!accounts.length){ alert("Kosong"); return; } let blob=new Blob([JSON.stringify(accounts,null,2)],{type:"application/json"}); let url=URL.createObjectURL(blob); let a=document.createElement("a"); a.href=url; a.download=`hive-vault-v151-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url); }
+function importFromText(){ let txt=$("importPreview").value.trim(); if(!txt){ alert("Paste JSON dulu"); return; } try{ let arr=JSON.parse(txt); doImport(arr); }catch(e){ alert("JSON invalid: "+e.message); } }
+$("fileImport").addEventListener("change",async(e)=>{ let f=e.target.files[0]; if(!f) return; let txt=await f.text(); try{ let arr=JSON.parse(txt); doImport(arr); }catch{ alert("JSON invalid"); } e.target.value=""; });
+function doImport(arr){
+  if(!Array.isArray(arr)){ alert("Harus array"); return; }
+  let valid=arr.filter(x=>x.username).map(x=>({username:String(x.username).toLowerCase().trim(), owner:String(x.owner||"").trim(), active:String(x.active||"").trim(), posting:String(x.posting||"").trim(), memo:String(x.memo||"").trim(), recovery:String(x.recovery||"").trim(), updated:Date.now()}));
+  if(!valid.length){ alert("Tidak ada valid"); return; }
+  if(confirm(`Import ${valid.length} akun? Merge, tidak hapus lama.`)){
+    let map=new Map(accounts.map(a=>[a.username,a])); valid.forEach(v=>map.set(v.username,{...(map.get(v.username)||{}),...v})); accounts=[...map.values()]; save(); render(); $("importPreview").value=""; alert(`Sukses import. Total ${accounts.length} akun`); }
+}
 function copyUsernames(){ if(!accounts.length) return; let txt=accounts.map(a=>a.username).join(", "); navigator.clipboard.writeText(txt).then(()=>alert(`Copied ${accounts.length} username`)); }
 $("searchInput").addEventListener("input",render);
 
-// VALIDATOR
+// VALIDATOR + RC + SALDO (sama seperti V1.5)
 hive.api.setOptions({url:'https://api.hive.blog'});
 function pubFromWif(wif){ try{ return hive.auth.wifToPublic(wif); }catch{ return null; } }
-async function getAccount(name){ return new Promise((res,rej)=>{ hive.api.getAccounts([name],(err,accs)=>{ if(err) rej(err); else res(accs&&accs[0]); }); }); }
-async function validateOne(username){
-  let accData=accounts.find(a=>a.username===username);
-  if(!accData) return {posting:"?", active:"?", detail:"no data"};
-  let result={posting:"?", active:"?", detail:""};
-  try{
-    let chainAcc=await getAccount(username);
-    if(!chainAcc){ result.detail="akun tidak ditemukan"; result.posting="✗"; result.active="✗"; return result; }
-    if(accData.posting){ let pub=pubFromWif(accData.posting); if(!pub){ result.posting="✗"; result.detail+=" posting WIF invalid; "; } else { let postingAuths=chainAcc.posting.key_auths.map(k=>k[0]); result.posting=postingAuths.includes(pub)?"✓":"✗"; } } else result.posting="?";
-    if(accData.active){ let pub=pubFromWif(accData.active); if(!pub){ result.active="✗"; result.detail+=" active WIF invalid; "; } else { let activeAuths=chainAcc.active.key_auths.map(k=>k[0]); result.active=activeAuths.includes(pub)?"✓":"✗"; } } else result.active="?";
-    result.detail=result.detail||"checked ok"; return result;
-  }catch(e){ return {posting:"✗", active:"✗", detail:e.message||"error"}; }
-}
-function renderValidator(){
+async function getAccounts(names){ return new Promise((res,rej)=>{ hive.api.getAccounts(names,(err,accs)=>{ if(err) rej(err); else res(accs); }); }); }
+async function getRcAccounts(names){ return new Promise((res,rej)=>{ hive.api.call('rc_api.find_rc_accounts',{accounts:names},(err,result)=>{ if(err) rej(err); else res(result.rc_accounts||[]); }); }); }
+function vestToHP(vesting, props){ try{ let totalVests=parseFloat(props.total_vesting_shares.split(' ')[0]); let totalHive=parseFloat(props.total_vesting_fund_hive.split(' ')[0]); let vests=parseFloat(vesting.split(' ')[0]); return vests * totalHive / totalVests; }catch{ return 0; } }
+async function getGlobalProps(){ return new Promise((res,rej)=>{ hive.api.getDynamicGlobalProperties((err,props)=>{ if(err) rej(err); else res(props); }); }); }
+function renderValidatorTable(){
   let tbody=$("valBody"); tbody.innerHTML="";
   accounts.forEach((a,i)=>{
-    let r=validationResults[a.username]||{posting:"?", active:"?", detail:"belum dicek"};
-    let postClass=r.posting==="✓"?"ok":r.posting==="✗"?"err":"wait";
-    let actClass=r.active==="✓"?"ok":r.active==="✗"?"err":"wait";
-    let tr=document.createElement("tr");
-    tr.innerHTML=`<td>${i+1}</td><td><b>${a.username}</b><div style="font-size:9px;color:#7a7f85">${r.detail}</div></td><td class="${postClass}" style="font-size:16px;text-align:center">${r.posting}</td><td class="${actClass}" style="font-size:16px;text-align:center">${r.active}</td><td><button class="btn btn-b" style="padding:6px 10px;font-size:10px" onclick="validateSingle('${a.username}')">CEK</button></td>`;
-    tbody.appendChild(tr);
-  });
-  $("valCount").textContent=`${accounts.length} akun`;
+    let r=validationResults[a.username]||{posting:"?", active:"?", rc:"-", hive:"-", hbd:"-", hp:"-", detail:"belum dicek"};
+    let postClass=r.posting==="✓"?"ok":r.posting==="✗"?"err":"wait"; let actClass=r.active==="✓"?"ok":r.active==="✗"?"err":"wait";
+    let tr=document.createElement("tr"); tr.innerHTML=`<td>${i+1}</td><td><b>${a.username}</b><div style="font-size:9px;color:#7a7f85">${r.detail}</div></td><td class="${postClass}" style="text-align:center;font-size:14px">${r.posting}</td><td class="${actClass}" style="text-align:center;font-size:14px">${r.active}</td><td>${r.rc}</td><td>${r.hive}</td><td>${r.hbd}</td><td>${r.hp}</td><td><button class="btn btn-b" style="padding:6px 8px;font-size:10px" onclick="validateSingle('${a.username}')">CEK</button></td>`; tbody.appendChild(tr);
+  }); $("valCount").textContent=`${accounts.length} akun`;
 }
 async function validateSingle(username){
-  validationResults[username]={posting:"⏳", active:"⏳", detail:"checking..."};
-  renderValidator();
-  let res=await validateOne(username);
-  validationResults[username]=res;
-  renderValidator();
-  $("valLog").textContent=`${username}: posting ${res.posting} | active ${res.active} | ${res.detail}`;
+  validationResults[username]={posting:"⏳", active:"⏳", rc:"-", hive:"-", hbd:"-", hp:"-", detail:"checking key..."}; renderValidatorTable();
+  let keyRes=await checkKeysOnly(username); validationResults[username]={...validationResults[username],...keyRes}; renderValidatorTable();
+  let extra=await checkRcAndBalance([username]); if(extra[username]){ validationResults[username]={...validationResults[username],...extra[username], detail:keyRes.detail+" | saldo ok"}; } renderValidatorTable();
 }
-async function validateAll(){
+async function runFullCheck(){
   if(!accounts.length){ alert("Belum ada akun"); return; }
-  $("valLog").textContent=`Mengecek ${accounts.length} akun...`;
-  for(let a of accounts){
-    validationResults[a.username]={posting:"⏳", active:"⏳", detail:"checking..."};
-    renderValidator();
-    let res=await validateOne(a.username);
-    validationResults[a.username]=res;
-    $("valLog").textContent=`${a.username}: posting ${res.posting} | active ${res.active}\n` + $("valLog").textContent;
-    renderValidator();
-    await new Promise(r=>setTimeout(r,300));
+  let names=accounts.map(a=>a.username); $("btnCheck").disabled=true; $("bar").style.width="5%"; $("valLog").textContent=`TAHAP 1: Cek posting & active key untuk ${names.length} akun...\n`;
+  for(let i=0;i<names.length;i++){
+    let name=names[i]; validationResults[name]={posting:"⏳", active:"⏳", rc:"-", hive:"-", hbd:"-", hp:"-", detail:"checking key..."}; renderValidatorTable();
+    let keyRes=await checkKeysOnly(name); validationResults[name]={...validationResults[name],...keyRes};
+    $("valLog").textContent=`[${i+1}/${names.length}] ${name}: posting ${keyRes.posting} active ${keyRes.active}\n` + $("valLog").textContent;
+    $("bar").style.width=`${10+ (i+1)/names.length*40}%`; renderValidatorTable(); await new Promise(r=>setTimeout(r,250));
   }
+  $("valLog").textContent=`\nTAHAP 1 SELESAI. TAHAP 2: Rekap RC + HIVE + HBD + HP...\n` + $("valLog").textContent; $("bar").style.width="60%";
+  try{
+    let props=await getGlobalProps(); let rcAccounts=await getRcAccounts(names); let chainAccounts=await getAccounts(names);
+    let mapRc=new Map(rcAccounts.map(r=>[r.account,r]));
+    chainAccounts.forEach(c=>{
+      let rcInfo=mapRc.get(c.name); let rcPercent="-"; if(rcInfo){ let max=parseFloat(rcInfo.max_rc); let cur=parseFloat(rcInfo.rc_manabar.current_mana); rcPercent=max>0? ((cur/max)*100).toFixed(1)+"%" : "0%"; }
+      let hp=vestToHP(c.vesting_shares, props).toFixed(3)+" HP";
+      validationResults[c.name]={...(validationResults[c.name]||{posting:"?",active:"?"}), rc:rcPercent, hive:c.balance, hbd:c.hbd_balance, hp:hp, detail:(validationResults[c.name]?.detail||"")+" | RC & saldo ok"};
+    });
+    $("bar").style.width="100%"; $("valLog").textContent=`TAHAP 2 SELESAI: ${chainAccounts.length} akun direkap\n` + $("valLog").textContent; renderValidatorTable();
+  }catch(e){ $("valLog").textContent=`Error tahap 2: ${e.message}\n` + $("valLog").textContent; } finally { $("btnCheck").disabled=false; setTimeout(()=>$("bar").style.width="0%",1500); }
 }
-function clearValidation(){ validationResults={}; $("valLog").textContent="Hasil clear."; renderValidator(); }
-
+async function checkKeysOnly(username){
+  let accData=accounts.find(a=>a.username===username); if(!accData) return {posting:"?", active:"?", detail:"no data"};
+  try{
+    let chainAccs=await getAccounts([username]); let chainAcc=chainAccs[0]; if(!chainAcc) return {posting:"✗", active:"✗", detail:"akun tidak ada"};
+    let postingRes="?", activeRes="?", detail="";
+    if(accData.posting){ let pub=pubFromWif(accData.posting); if(!pub){ postingRes="✗"; detail+="posting WIF invalid; "; } else { let auths=chainAcc.posting.key_auths.map(k=>k[0]); postingRes=auths.includes(pub)?"✓":"✗"; } }
+    if(accData.active){ let pub=pubFromWif(accData.active); if(!pub){ activeRes="✗"; detail+="active WIF invalid; "; } else { let auths=chainAcc.active.key_auths.map(k=>k[0]); activeRes=auths.includes(pub)?"✓":"✗"; } }
+    return {posting:postingRes, active:activeRes, detail:detail||"key checked"};
+  }catch(e){ return {posting:"✗", active:"✗", detail:e.message}; }
+}
+async function checkRcAndBalance(names){
+  try{
+    let props=await getGlobalProps(); let rcAccounts=await getRcAccounts(names); let chainAccounts=await getAccounts(names); let mapRc=new Map(rcAccounts.map(r=>[r.account,r])); let result={};
+    chainAccounts.forEach(c=>{ let rcInfo=mapRc.get(c.name); let rcPercent="-"; if(rcInfo){ let max=parseFloat(rcInfo.max_rc); let cur=parseFloat(rcInfo.rc_manabar.current_mana); rcPercent=max>0? ((cur/max)*100).toFixed(1)+"%" : "0%"; } result[c.name]={rc:rcPercent, hive:c.balance, hbd:c.hbd_balance, hp:vestToHP(c.vesting_shares, props).toFixed(3)+" HP"}; });
+    return result;
+  }catch{ return {}; }
+}
+function clearValidation(){ validationResults={}; $("valLog").textContent="Clear."; $("bar").style.width="0%"; renderValidatorTable(); }
 window.addEventListener('load',load);
 </script>
 </body>
