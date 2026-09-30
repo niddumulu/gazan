@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V6.0 - HIVE-ENGINE WALLET SCANNER PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080a0c;color:#e6e8ea;font-family:'Inter',sans-serif}
+.app{max-width:860px;margin:auto}
+.header{padding:16px;position:sticky;top:0;background:rgba(8,10,12,.96);backdrop-filter:blur(12px);border-bottom:1px solid #1a1e22;z-index:10;display:flex;justify-content:space-between;align-items:center}
+.ver{font-family:'JetBrains Mono';font-size:10px;background:#00ff88;color:#000;padding:4px 8px;border-radius:20px;font-weight:800;letter-spacing:.5px}
+.card{background:#161a1e;border:1px solid #23282e;border-radius:20px;padding:16px;margin:12px}
+textarea{width:100%;padding:14px;border-radius:14px;border:1px solid #2a2f35;background:#0d0f11;color:#fff;outline:none;font-family:'JetBrains Mono',monospace;font-size:12px}
+input.search{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #2a2f35;background:#0d0f11;color:#fff;outline:none;font-size:12px;margin-top:10px}
+.btn{padding:10px 14px;border-radius:12px;border:0;font-weight:800;cursor:pointer;font-size:12px}.btn-g{background:#00ff88;color:#000;width:100%;padding:14px;font-size:13px}.btn-r{background:#1c2329;color:#8a94a0;border:1px solid #2a323a}.btn-d{background:#242a30;color:#d0d4d8}.btn-faq{background:#12151a;border:1px solid #2a2f35;color:#7a7f85;padding:8px 12px}
+.badge{font-size:10px;padding:5px 10px;border-radius:20px;background:#0d0f11;border:1px solid #2a2f35;display:inline-block;margin:2px}
+.status{padding:10px;border-radius:12px;background:#0d0f11;border:1px solid #22272d;margin-top:10px;font-size:11px;white-space:pre-wrap;font-family:'JetBrains Mono',monospace;max-height:160px;overflow:auto}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.tab{padding:9px 14px;border-radius:20px;border:1px solid #2a2f35;background:#0d0f11;color:#7a7f85;cursor:pointer;font-size:11px;font-weight:700}.tab.active{background:#00ff88;color:#000;border-color:#00ff88}
+table{width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono'}th{color:#7a7f85;text-align:left;padding:12px 8px;border-bottom:1px solid #23282e;position:sticky;top:0;background:#161a1e;font-size:10px}td{padding:12px 8px;border-bottom:1px solid #15181b;vertical-align:top;cursor:pointer}tr:hover td{background:#1c2126}
+.progress{height:6px;background:#1a1e22;border-radius:10px;overflow:hidden;margin-top:10px}.bar{height:100%;background:#00ff88;width:0%;transition:.2s}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:none;z-index:50;align-items:center;justify-content:center;padding:14px}.modal-bg.show{display:flex}
+.modal{background:#161a1e;border:1px solid #2a2f35;border-radius:22px;width:100%;max-width:540px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-head{padding:16px;border-bottom:1px solid #23282e;display:flex;justify-content:space-between;align-items:center}
+.modal-body{padding:14px;overflow:auto}
+.holder-row,.dele-row{padding:12px;border-radius:14px;background:#0d0f11;border:1px solid #1e2328;margin-bottom:8px;font-size:12px}
+.dele-top{display:flex;justify-content:space-between;align-items:center}
+.faq-item{padding:12px;border-radius:14px;background:#0d0f11;border:1px solid #1e2328;margin-bottom:8px}.faq-q{font-weight:800;font-size:12px}.faq-a{font-size:11px;color:#9aa0a6;margin-top:6px;line-height:1.6;white-space:pre-wrap}
+.footer{text-align:center;padding:18px;font-size:9px;color:#4a5056;font-family:'JetBrains Mono';letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;background:#00ff88;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:14px">H</div><div><div style="display:flex;align-items:center;gap:8px"><b style="font-size:13px">H-E SCANNER PRO</b><span class="ver">V6.0</span></div><small style="color:#7a7f85;font-size:10px">LIQUID • STAKED • DELEGASI KELUAR/MASUK • DETAIL USERNAME</small></div></div>
+<button class="btn btn-faq" onclick="openFaq()">? FAQ</button>
+</div>
+
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center"><label style="font-size:10px;color:#7a7f85;font-weight:800;letter-spacing:.6px">DAFTAR AKUN HIVE</label><span id="saveInfo" class="badge" style="color:#00ff88">auto save</span></div>
+<textarea id="accInput" rows="5" placeholder="bagasadi, acehlon, andini...&#10;Pisahkan koma / spasi / enter"></textarea>
+<div style="display:flex;gap:6px;margin-top:10px"><span id="accCount" class="badge">0 akun</span><span class="badge" style="color:#7a7f85">V6.0 - klik baris → popup lengkap</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"><button id="scanBtn" class="btn btn-g">🔍 SCAN V6.0</button><button id="clearBtn" class="btn btn-r">🗑 CLEAR</button></div>
+<div class="progress"><div id="bar" class="bar"></div></div>
+<div id="log" class="status">V6.0 PRO ready. Masukkan akun → SCAN.</div>
+</div>
+
+<div class="card" id="resultCard" style="display:none">
+<div class="tabs">
+<div class="tab active" data-type="liquid">LIQUID</div>
+<div class="tab" data-type="stake">STAKED</div>
+<div class="tab" data-type="delegationsOut">DELEGASI KELUAR</div>
+<div class="tab" data-type="delegationsIn">DELEGASI MASUK</div>
+</div>
+<input id="searchInput" class="search" placeholder="🔎 Cari token di V6.0...">
+<div style="margin-top:10px"><span id="summary" class="badge">-</span></div>
+<div style="overflow:auto;max-height:70vh;margin-top:10px"><table id="tbl"><thead><tr><th>#</th><th>TOKEN</th><th>TOTAL</th><th>RINCIAN</th></tr></thead><tbody></tbody></table></div>
+</div>
+
+<div class="footer">V6.0 PRO DELEGASI • HIVE-ENGINE WALLET SCANNER • BUILT FOR PRO • © 2026</div>
+</div>
+
+<div id="modal" class="modal-bg" onclick="if(event.target===this) closeModal()"><div class="modal">
+<div class="modal-head"><div><div style="display:flex;align-items:center;gap:8px"><b id="mTitle">DETAIL</b><span class="ver" id="mVer">V6.0</span></div><div id="mSub" style="font-size:10px;color:#7a7f85">-</div></div><button onclick="closeModal()" class="btn btn-d">✕</button></div>
+<div class="modal-body">
+<div class="card" style="margin:0;padding:14px;text-align:center"><div style="font-size:10px;color:#7a7f85;letter-spacing:.5px">TOTAL TOKEN V6.0</div><div id="mTotal" style="font-size:28px;font-weight:900;margin-top:6px">0</div><div id="mSym" style="font-size:12px;color:#00ff88;margin-top:4px;font-weight:800">TOKEN</div><div id="mTypeLabel" style="font-size:10px;color:#7a7f85;margin-top:6px">-</div></div>
+<div style="margin-top:14px"><div style="display:flex;justify-content:space-between"><label id="mListLabel" style="font-size:10px;color:#7a7f85;font-weight:800">RINCIAN</label><span id="mHolderCount" class="badge">0</span></div><div id="mHolders" style="margin-top:8px"></div></div>
+<div style="margin-top:14px;display:flex;gap:8px"><button onclick="copyHolders()" class="btn btn-d" style="flex:1">📋 COPY</button><button onclick="closeModal()" class="btn btn-g" style="flex:1">TUTUP</button></div>
+</div>
+</div></div>
+
+<div id="faqModal" class="modal-bg" onclick="if(event.target===this) closeFaq()"><div class="modal">
+<div class="modal-head"><div><div style="display:flex;align-items:center;gap:8px"><b>FAQ V6.0</b><span class="ver">HELP</span></div><div style="font-size:10px;color:#7a7f85">Bantuan versi 6.0</div></div><button onclick="closeFaq()" class="btn btn-d">✕</button></div>
+<div class="modal-body">
+<div class="faq-item"><div class="faq-q">V6.0 ini apa?</div><div class="faq-a">V6.0 PRO adalah scanner wallet Hive-Engine versi bersih tanpa nilai jual REAL/MARKET. Fokus hanya:
+- LIQUID, STAKED
+- DELEGASI KELUAR (kamu → orang lain) + username tujuan + jumlah
+- DELEGASI MASUK (orang lain → kamu) + username pengirim + jumlah
+
+Klik baris token untuk popup lengkap.</div></div>
+<div class="faq-item"><div class="faq-q">Bedanya KELUAR vs MASUK?</div><div class="faq-a">KELUAR: kamu delegasikan ke orang lain
+Format: bagasadi → acehlon : 500 BEE
+
+MASUK: kamu menerima delegasi
+Format: andini → bagasadi : 1000 LEO</div></div>
+<button onclick="closeFaq()" class="btn btn-g" style="width:100%;margin-top:8px">MENGERTI V6.0</button>
+</div>
+</div></div>
+
+<script>
+const ENGINE_API="https://api.hive-engine.com/rpc/contracts";
+const LS_ACC="he_scanner_accounts_v60";
+const APP_VER="V6.0 PRO DELEGASI";
+const $=id=>document.getElementById(id);
+let resultsByType={}, delegationsOutMap={}, delegationsInMap={}, currentType="liquid", currentDetail=null, currentSearch="";
+
+function parseAccounts(t){return [...new Set(t.toLowerCase().split(/[\s,;]+/).map(s=>s.trim()).filter(s=>s.length>=3))];}
+function loadLocal(){let s=localStorage.getItem(LS_ACC); if(s) $("accInput").value=s; upd();}
+function saveLocal(){localStorage.setItem(LS_ACC,$("accInput").value); $("saveInfo").textContent="saved "+new Date().toLocaleTimeString(); setTimeout(()=>$("saveInfo").textContent="auto save",1500); upd();}
+function upd(){ $("accCount").textContent=parseAccounts($("accInput").value).length+" akun"; }
+$("accInput").addEventListener("input",()=>{upd(); clearTimeout(window.st); window.st=setTimeout(saveLocal,800);});
+$("clearBtn").onclick=()=>{if(confirm("Hapus?")){localStorage.removeItem(LS_ACC); $("accInput").value=""; upd(); $("resultCard").style.display="none"; $("bar").style.width="0%";}};
+async function rpc(m,p){let r=await fetch(ENGINE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",method:m,params:p,id:1})}); let j=await r.json(); if(j.error) throw new Error(j.error.message); return j.result;}
+function log(m){$("log").textContent+="\n"+m; $("log").scrollTop=$("log").scrollHeight;}
+async function fetchAll(accs){let all=[],off=0,lim=1000; while(true){let res=await rpc("find",{contract:"tokens",table:"balances",query:{account:{"$in":accs}},limit:lim,offset:off}); if(!res?.length) break; all.push(...res); off+=lim; if(res.length<lim) break; await new Promise(r=>setTimeout(r,80));} return all;}
+async function fetchDelegations(accs){
+  let out=[], inp=[], off=0, lim=1000;
+  while(true){let res=await rpc("find",{contract:"tokens",table:"delegations",query:{from:{"$in":accs}},limit:lim,offset:off}); if(!res?.length) break; out.push(...res); off+=lim; if(res.length<lim) break; await new Promise(r=>setTimeout(r,80));}
+  off=0;
+  while(true){let res=await rpc("find",{contract:"tokens",table:"delegations",query:{to:{"$in":accs}},limit:lim,offset:off}); if(!res?.length) break; inp.push(...res); off+=lim; if(res.length<lim) break; await new Promise(r=>setTimeout(r,80));}
+  return {out,inp};
+}
+async function processAll(all,delegs){
+  let maps={liquid:{},stake:{},delegationsOut:{},delegationsIn:{}};
+  all.forEach(b=>{if(b.symbol==="SWAP.HIVE")return; let f={liquid:parseFloat(b.balance)||0,stake:parseFloat(b.stake)||0,delegationsOut:parseFloat(b.delegationsOut)||0,delegationsIn:parseFloat(b.delegationsIn)||0}; for(let k in f){let v=f[k]; if(v<=1e-8)continue; if(!maps[k][b.symbol]) maps[k][b.symbol]={total:0,holders:[]}; maps[k][b.symbol].total+=v; maps[k][b.symbol].holders.push({account:b.account,balance:v});}});
+  delegationsOutMap={}; delegationsInMap={};
+  delegs.out.forEach(d=>{let sym=d.symbol; let qty=parseFloat(d.quantity)||0; if(!delegationsOutMap[sym]) delegationsOutMap[sym]=[]; delegationsOutMap[sym].push({from:d.from,to:d.to,quantity:qty});});
+  delegs.inp.forEach(d=>{let sym=d.symbol; let qty=parseFloat(d.quantity)||0; if(!delegationsInMap[sym]) delegationsInMap[sym]=[]; delegationsInMap[sym].push({from:d.from,to:d.to,quantity:qty});});
+  for(let type of Object.keys(maps)){ let tokens=Object.entries(maps[type]).map(([sym,d])=>({symbol:sym,total:d.total,holders:d.holders,type})); resultsByType[type]=tokens.sort((a,b)=>b.total-a.total); }
+}
+function render(type){
+  currentType=type; document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.type===type));
+  let data=[...(resultsByType[type]||[])]; if(currentSearch) data=data.filter(d=>d.symbol.toLowerCase().includes(currentSearch.toLowerCase()));
+  let tbody=$("tbl").querySelector("tbody"); tbody.innerHTML="";
+  data.forEach((r,idx)=>{
+    let detailText="";
+    if(type==="delegationsOut"){ let arr=delegationsOutMap[r.symbol]||[]; detailText=arr.slice(0,2).map(x=>`${x.from}→${x.to}`).join(", ")+(arr.length>2?` +${arr.length-2}`:""); }
+    else if(type==="delegationsIn"){ let arr=delegationsInMap[r.symbol]||[]; detailText=arr.slice(0,2).map(x=>`${x.from}→${x.to}`).join(", ")+(arr.length>2?` +${arr.length-2}`:""); }
+    else { detailText=r.holders.slice(0,2).map(h=>h.account).join(", ")+(r.holders.length>2?` +${r.holders.length-2}`:""); }
+    let tr=document.createElement("tr"); tr.onclick=()=>openModal(r);
+    tr.innerHTML=`<td>${idx+1}</td><td><b>${r.symbol}</b></td><td>${r.total.toLocaleString(undefined,{maximumFractionDigits:4})}<div style="font-size:9px;color:#7a7f85">${r.holders.length} akun</div></td><td style="max-width:200px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${detailText}</td>`;
+    tbody.appendChild(tr);
+  });
+  let label={liquid:"LIQUID",stake:"STAKED",delegationsOut:"DELEGASI KELUAR",delegationsIn:"DELEGASI MASUK"}[type];
+  $("summary").textContent=`${APP_VER} | ${label} | ${data.length} token`;
+}
+function openModal(r){
+  currentDetail=r;
+  let isOut=r.type==="delegationsOut", isIn=r.type==="delegationsIn";
+  let label={liquid:"LIQUID - siap pakai di dompet",stake:"STAKED - di-power up / governance",delegationsOut:"DELEGASI KELUAR - kamu kirim ke orang lain",delegationsIn:"DELEGASI MASUK - kamu terima dari orang lain"}[r.type]||r.type;
+  $("mTitle").textContent=`${r.symbol}`;
+  $("mSub").textContent=isOut||isIn?`${(isOut?delegationsOutMap[r.symbol]||[]:delegationsInMap[r.symbol]||[]).length} jalur delegasi • ${APP_VER}`: `${r.holders.length} holder • ${APP_VER}`;
+  $("mTypeLabel").textContent=label;
+  $("mTotal").textContent=r.total.toLocaleString(undefined,{maximumFractionDigits:6});
+  $("mSym").textContent=r.symbol;
+  let html="";
+  if(isOut||isIn){
+    let arr=isOut? (delegationsOutMap[r.symbol]||[]) : (delegationsInMap[r.symbol]||[]);
+    arr.sort((a,b)=>b.quantity-a.quantity);
+    $("mListLabel").textContent=isOut?"RINCIAN DELEGASI KELUAR (dari → ke) + JUMLAH" : "RINCIAN DELEGASI MASUK (dari → ke) + JUMLAH";
+    $("mHolderCount").textContent=`${arr.length} jalur`;
+    arr.forEach((d,i)=>{ html+=`<div class="dele-row"><div class="dele-top"><div><b>${i+1}. ${d.from}</b> <span style="color:#7a7f85">→</span> <b style="color:#00ff88">${d.to}</b></div><div style="text-align:right"><b>${d.quantity.toLocaleString(undefined,{maximumFractionDigits:6})} ${r.symbol}</b></div></div><div style="margin-top:6px;font-size:10px;color:#7a7f85">${d.from} → ${d.to} : ${d.quantity} ${r.symbol} • ${(d.quantity/r.total*100).toFixed(1)}% dari total ${r.symbol}</div></div>`; });
+    if(arr.length===0) html=`<div style="padding:12px;background:#0d0f11;border-radius:12px;font-size:11px;color:#7a7f85">Tidak ada detail jalur (balance delegasi ada tapi data delegations kosong).</div>`;
+  } else {
+    let sorted=r.holders.sort((a,b)=>b.balance-a.balance);
+    $("mListLabel").textContent="RINCIAN HOLDER + JUMLAH";
+    $("mHolderCount").textContent=`${sorted.length} akun`;
+    sorted.forEach((h,i)=>{ html+=`<div class="holder-row"><div><div style="font-size:10px;color:#7a7f85">#${i+1}</div><b style="font-size:13px">${h.account}</b></div><div style="text-align:right"><b>${h.balance.toLocaleString(undefined,{maximumFractionDigits:6})}</b><div style="font-size:10px;color:#7a7f85">${(h.balance/r.total*100).toFixed(1)}% • ${r.symbol}</div></div></div>`; });
+  }
+  $("mHolders").innerHTML=html;
+  $("modal").classList.add("show");
+}
+function closeModal(){ $("modal").classList.remove("show"); }
+function openFaq(){ $("faqModal").classList.add("show"); }
+function closeFaq(){ $("faqModal").classList.remove("show"); }
+function copyHolders(){
+  if(!currentDetail) return;
+  let r=currentDetail, isOut=r.type==="delegationsOut", isIn=r.type==="delegationsIn";
+  let txt="";
+  if(isOut||isIn){
+    let arr=isOut? (delegationsOutMap[r.symbol]||[]) : (delegationsInMap[r.symbol]||[]);
+    txt=`[${APP_VER}] ${r.symbol} TOTAL ${r.total} (${isOut?"DELEGASI KELUAR":"DELEGASI MASUK"})\n`+arr.map((d,i)=>`${i+1}. ${d.from} -> ${d.to} : ${d.quantity} ${r.symbol}`).join("\n");
+  } else {
+    txt=`[${APP_VER}] ${r.symbol} TOTAL ${r.total} (${r.type})\n`+r.holders.sort((a,b)=>b.balance-a.balance).map((h,i)=>`${i+1}. ${h.account} - ${h.balance} ${r.symbol}`).join("\n");
+  }
+  navigator.clipboard.writeText(txt).then(()=>{ $("mSub").textContent="Copied V6.0!"; });
+}
+$("scanBtn").onclick=async()=>{
+  saveLocal(); let accs=parseAccounts($("accInput").value); if(!accs.length){alert("isi akun"); return;}
+  $("scanBtn").disabled=true; $("log").textContent=`${APP_VER} scan ${accs.length} akun...`; $("bar").style.width="5%";
+  try{
+    let all=await fetchAll(accs); $("bar").style.width="35%"; log(`${all.length} balances`);
+    log(`Fetch delegations detail V6.0...`);
+    let delegs=await fetchDelegations(accs); $("bar").style.width="65%"; log(`keluar ${delegs.out.length} jalur, masuk ${delegs.inp.length} jalur`);
+    await processAll(all,delegs); $("bar").style.width="85%";
+    $("resultCard").style.display="block"; render("liquid"); $("bar").style.width="100%";
+    log(`SELESAI ${APP_VER}.`);
+  }catch(e){log("ERR "+e.message);} finally{$("scanBtn").disabled=false; $("scanBtn").textContent="🔍 SCAN V6.0";}
+};
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>render(t.dataset.type));
+$("searchInput").addEventListener("input",(e)=>{currentSearch=e.target.value; render(currentType);});
+window.addEventListener('load',loadLocal);
+</script>
+</body>
+</html>
