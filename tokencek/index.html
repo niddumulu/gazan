@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SCANNER V5.3.3 POPUP FIX</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080a0c;color:#e6e8ea;font-family:'Inter',sans-serif}
+.app{max-width:820px;margin:auto}
+.header{padding:16px;position:sticky;top:0;background:rgba(8,10,12,.96);backdrop-filter:blur(10px);border-bottom:1px solid #1a1e22;z-index:10}
+.card{background:#161a1e;border:1px solid #23282e;border-radius:18px;padding:16px;margin:12px}
+textarea{width:100%;padding:12px;margin-top:6px;border-radius:12px;border:1px solid #2a2f35;background:#0d0f11;color:#fff;outline:none;font-family:'JetBrains Mono',monospace;font-size:12px}
+.btn{padding:10px 14px;border-radius:10px;border:0;font-weight:800;cursor:pointer;font-size:12px}.btn-g{background:#00ff88;color:#000;width:100%;padding:14px}.btn-r{background:#2a1a1e;color:#ff6b7a;border:1px solid #3a2025}.btn-d{background:#242a30;color:#d0d4d8}
+.badge{font-size:10px;padding:4px 8px;border-radius:8px;background:#0d0f11;border:1px solid #2a2f35;display:inline-block;margin:2px}
+.status{padding:10px;border-radius:10px;background:#0d0f11;border:1px solid #22272d;margin-top:10px;font-size:11px;white-space:pre-wrap;font-family:'JetBrains Mono',monospace;max-height:220px;overflow:auto}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.tab{padding:8px 12px;border-radius:20px;border:1px solid #2a2f35;background:#0d0f11;color:#7a7f85;cursor:pointer;font-size:11px;font-weight:700}.tab.active{background:#00ff88;color:#000;border-color:#00ff88}
+table{width:100%;border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono'}th{color:#7a7f85;text-align:left;padding:8px;border-bottom:1px solid #23282e;position:sticky;top:0;background:#161a1e}td{padding:8px;border-bottom:1px solid #15181b;vertical-align:top;cursor:pointer}tr:hover td{background:#1a1e22}
+.progress{height:6px;background:#1a1e22;border-radius:10px;overflow:hidden;margin-top:10px}.bar{height:100%;background:#00ff88;width:0%;transition:.2s}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;z-index:50;align-items:center;justify-content:center;padding:12px}.modal-bg.show{display:flex}
+.modal{background:#161a1e;border:1px solid #2a2f35;border-radius:20px;width:100%;max-width:500px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-head{padding:16px;border-bottom:1px solid #23282e;display:flex;justify-content:space-between;align-items:center}
+.modal-body{padding:12px;overflow:auto}
+.holder-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:12px;background:#0d0f11;border:1px solid #1e2328;margin-bottom:6px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="header"><b>V5.3.3 POPUP FIX</b><div style="font-size:10px;color:#7a7f85">klik baris → popup jumlah koin + holder, tanpa nilai jual</div></div>
+<div class="card">
+<textarea id="accInput" rows="5" placeholder="bagasadi, acehlon, andini..."></textarea>
+<div style="display:flex;gap:6px;margin-top:8px"><span id="accCount" class="badge">0 akun</span><span id="saveInfo" class="badge" style="color:#00ff88">auto save</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button id="scanBtn" class="btn btn-g">🔍 SCAN</button><button id="clearBtn" class="btn btn-r">🗑 CLEAR</button></div>
+<div class="progress"><div id="bar" class="bar"></div></div>
+<div id="log" class="status">Klik baris hasil untuk popup.</div>
+</div>
+<div class="card" id="resultCard" style="display:none">
+<div class="tabs"><div class="tab active" data-type="liquid">LIQUID</div><div class="tab" data-type="stake">STAKED</div><div class="tab" data-type="delegationsOut">OUT</div><div class="tab" data-type="delegationsIn">IN</div><div class="tab" data-type="pending">PENDING</div></div>
+<div style="display:flex;gap:6px;margin-top:10px"><span id="summary" class="badge">-</span><button onclick="setSort('real')" class="btn btn-d" id="sortReal" style="border-color:#00ff88">Sort REAL</button><button onclick="setSort('market')" class="btn btn-d" id="sortMarket">Sort MARKET</button></div>
+<div style="overflow:auto;max-height:70vh;margin-top:10px"><table id="tbl"><thead><tr><th>#</th><th>TOKEN</th><th>TOTAL</th><th>REAL</th><th>MARKET</th><th>HOLDERS</th></tr></thead><tbody></tbody></table></div>
+</div>
+</div>
+
+<div id="modal" class="modal-bg" onclick="if(event.target===this) closeModal()">
+<div class="modal">
+<div class="modal-head"><div><b id="mTitle">TOKEN DETAIL</b><div id="mSub" style="font-size:10px;color:#7a7f85">-</div></div><button onclick="closeModal()" class="btn btn-d">✕</button></div>
+<div class="modal-body">
+<div id="mTotalBox" class="card" style="margin:0;padding:12px;text-align:center"><div style="font-size:10px;color:#7a7f85">TOTAL TOKEN</div><div id="mTotal" style="font-size:28px;font-weight:800;margin-top:4px">0</div><div id="mSym" style="font-size:12px;color:#00ff88;margin-top:2px">TOKEN</div></div>
+<div style="margin-top:12px"><label style="font-size:10px;color:#7a7f85;font-weight:700">RINCIAN HOLDER</label><div id="mHolders" style="margin-top:8px"></div></div>
+<div style="margin-top:12px;display:flex;gap:6px"><button onclick="copyHolders()" class="btn btn-d" style="flex:1">COPY LIST</button><button onclick="closeModal()" class="btn btn-g" style="flex:1">TUTUP</button></div>
+</div>
+</div>
+</div>
+
+<script>
+const ENGINE_API="https://api.hive-engine.com/rpc/contracts";
+const LS_ACC="he_scanner_accounts_v533";
+const $=id=>document.getElementById(id);
+let resultsByType={}, currentType="liquid", sortMode="real", currentDetail=null;
+
+function parseAccounts(t){return [...new Set(t.toLowerCase().split(/[\s,;]+/).map(s=>s.trim()).filter(s=>s.length>=3))];}
+function loadLocal(){let s=localStorage.getItem(LS_ACC); if(s) $("accInput").value=s; upd();}
+function saveLocal(){localStorage.setItem(LS_ACC,$("accInput").value); $("saveInfo").textContent="saved "+new Date().toLocaleTimeString(); setTimeout(()=>$("saveInfo").textContent="auto save",1500); upd();}
+function upd(){ $("accCount").textContent=parseAccounts($("accInput").value).length+" akun"; }
+$("accInput").addEventListener("input",()=>{upd(); clearTimeout(window.st); window.st=setTimeout(saveLocal,800);});
+$("clearBtn").onclick=()=>{if(confirm("Hapus?")){localStorage.removeItem(LS_ACC); $("accInput").value=""; upd(); $("resultCard").style.display="none"; $("bar").style.width="0%";}};
+async function rpc(m,p){let r=await fetch(ENGINE_API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",method:m,params:p,id:1})}); let j=await r.json(); if(j.error) throw new Error(j.error.message); return j.result;}
+function log(m){$("log").textContent+="\n"+m; $("log").scrollTop=$("log").scrollHeight;}
+async function fetchAll(accs){let all=[],off=0,lim=1000; while(true){let res=await rpc("find",{contract:"tokens",table:"balances",query:{account:{"$in":accs}},limit:lim,offset:off}); if(!res?.length) break; all.push(...res); log(`fetch ${off}+${res.length}=${all.length}`); off+=lim; if(res.length<lim) break; await new Promise(r=>setTimeout(r,120));} return all;}
+async function estimate(sym,amt){try{let [book,met]=await Promise.all([rpc("find",{contract:"market",table:"buyBook",query:{symbol:sym},limit:100,indexes:[{index:"priceDec",descending:true}]}),rpc("findOne",{contract:"market",table:"metrics",query:{symbol:sym}})]); let last=parseFloat(met?.lastPrice)||0,market=last*amt,rem=amt,real=0; for(let o of book||[]){let q=parseFloat(o.quantity)||0,p=parseFloat(o.price)||0; let take=Math.min(rem,q); real+=take*p; rem-=take; if(rem<=0) break;} return {real,market,last,fill:amt>0?((amt-rem)/amt*100):0,top:book?.[0]?.price||0};}catch(e){return {real:0,market:0,last:0,fill:0,top:0};}}
+async function processAll(all){
+  let maps={liquid:{},stake:{},delegationsOut:{},delegationsIn:{},pending:{}};
+  all.forEach(b=>{if(b.symbol==="SWAP.HIVE")return; let f={liquid:parseFloat(b.balance)||0,stake:parseFloat(b.stake)||0,delegationsOut:parseFloat(b.delegationsOut)||0,delegationsIn:parseFloat(b.delegationsIn)||0,pending:parseFloat(b.pendingUnstake)||0}; for(let k in f){let v=f[k]; if(v<=1e-8)continue; if(!maps[k][b.symbol]) maps[k][b.symbol]={total:0,holders:[]}; maps[k][b.symbol].total+=v; maps[k][b.symbol].holders.push({account:b.account,balance:v});}});
+  for(let type of Object.keys(maps)){
+    let tokens=Object.entries(maps[type]).map(([sym,d])=>({symbol:sym,total:d.total,holders:d.holders}));
+    let res=[]; for(let i=0;i<tokens.length;i++){let t=tokens[i]; $("scanBtn").textContent=`${type} ${i+1}/${tokens.length} ${t.symbol}`; $("bar").style.width=`${30+(i/tokens.length)*60}%`; let est=await estimate(t.symbol,t.total); res.push({...t,...est,type}); if(i%3===0) await new Promise(r=>setTimeout(r,50));}
+    resultsByType[type]=res;
+  }
+}
+function setSort(m){sortMode=m; $("sortReal").style.borderColor=m==="real"?"#00ff88":"#2a2f35"; $("sortMarket").style.borderColor=m==="market"?"#00ff88":"#2a2f35"; render(currentType);}
+function render(type){
+  currentType=type; document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.type===type));
+  let data=[...(resultsByType[type]||[])]; data.sort((a,b)=> sortMode==="real"? b.real-a.real : b.market-a.market);
+  let tbody=$("tbl").querySelector("tbody"); tbody.innerHTML="";
+  data.forEach((r,idx)=>{
+    let holders=r.holders.sort((a,b)=>b.balance-a.balance);
+    let short=holders.slice(0,3).map(h=>h.account).join(", ")+(holders.length>3?` +${holders.length-3}`:"");
+    let tr=document.createElement("tr"); tr.onclick=()=>openModal(r);
+    tr.innerHTML=`<td>${idx+1}</td><td><b>${r.symbol}</b></td><td>${r.total.toLocaleString(undefined,{maximumFractionDigits:2})}<div style="font-size:9px;color:#7a7f85">${r.holders.length} akun</div></td><td style="color:#00ff88">${r.real.toFixed(3)}</td><td style="color:#ffd166">${r.market.toFixed(3)}</td><td style="max-width:130px">${short}</td>`;
+    tbody.appendChild(tr);
+  });
+  $("summary").textContent=`${type.toUpperCase()} | ${data.length} token | KLIK BARIS UNTUK DETAIL`;
+}
+function openModal(r){
+  currentDetail=r;
+  $("mTitle").textContent=`${r.symbol} - ${r.type.toUpperCase()}`;
+  $("mSub").textContent=`${r.holders.length} holder • ${r.type}`;
+  $("mTotal").textContent=r.total.toLocaleString(undefined,{maximumFractionDigits:6});
+  $("mSym").textContent=r.symbol;
+  let sorted=r.holders.sort((a,b)=>b.balance-a.balance);
+  let html=""; sorted.forEach((h,i)=>{
+    html+=`<div class="holder-row"><div><b>${i+1}. ${h.account}</b></div><div style="text-align:right"><b>${h.balance.toLocaleString(undefined,{maximumFractionDigits:6})} ${r.symbol}</b><div style="font-size:10px;color:#7a7f85">${(h.balance/r.total*100).toFixed(1)}% dari total</div></div></div>`;
+  });
+  $("mHolders").innerHTML=html;
+  $("modal").classList.add("show");
+}
+function closeModal(){ $("modal").classList.remove("show"); }
+function copyHolders(){
+  if(!currentDetail) return;
+  let txt=`${currentDetail.symbol} TOTAL ${currentDetail.total} (${currentDetail.type})\n`+currentDetail.holders.sort((a,b)=>b.balance-a.balance).map((h,i)=>`${i+1}. ${h.account} - ${h.balance} ${currentDetail.symbol}`).join("\n");
+  navigator.clipboard.writeText(txt).then(()=>{ $("mSub").textContent="Copied!"; setTimeout(()=>$("mSub").textContent=`${currentDetail.holders.length} holder • ${currentDetail.type}`,1500); });
+}
+$("scanBtn").onclick=async()=>{saveLocal(); let accs=parseAccounts($("accInput").value); if(!accs.length){alert("isi"); return;} $("scanBtn").disabled=true; $("log").textContent=`Scan ${accs.length} akun`; $("bar").style.width="5%"; try{let all=await fetchAll(accs); $("bar").style.width="30%"; log(`${all.length} rows`); await processAll(all); $("resultCard").style.display="block"; render("liquid"); $("bar").style.width="100%"; log("SELESAI - klik baris");}catch(e){log("ERR "+e.message);} finally{$("scanBtn").disabled=false; $("scanBtn").textContent="🔍 SCAN";}};
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>render(t.dataset.type));
+window.addEventListener('load',loadLocal);
+</script>
+</body>
+</html>
