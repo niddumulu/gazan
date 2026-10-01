@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hive Wuzz • Final GitHub Ready</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<style>
+:root{--outer:#e8e2d8;--bg:#f6f2eb;--card:#fff;--border:#e8e0d4;--text:#1e1c18;--muted:#8f8a82;--pill:#f2ece3;--accent:#ff3b30}
+*{box-sizing:border-box}body{margin:0;background:var(--outer);color:var(--text);font-family:ui-sans-system,-apple-system,BlinkMacSystemFont,"Inter",system-ui,sans-serif}
+.top{position:sticky;top:0;z-index:40;background:rgba(232,226,216,.98);backdrop-filter:blur(12px);border-bottom:1px solid #d9d0c2;height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 10px}
+.l{display:flex;align-items:center;gap:8px}.brand{font-weight:900;letter-spacing:.1em;font-size:12px;display:flex;gap:8px;align-items:center;cursor:pointer}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.btn{border:1px solid var(--border);background:var(--card);border-radius:99px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer}
+select{border:1px solid var(--border);background:var(--card);border-radius:99px;padding:6px 12px;font-size:11px;font-weight:700}
+.wrap{max-width:580px;margin:0 auto;background:var(--bg);min-height:100vh;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+#log{padding:6px 14px;font-size:10px;color:var(--muted);font-family:ui-monospace,Menlo,monospace;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+#list{padding:8px 10px 20px}
+.item{min-height:86px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 14px;margin:7px 0;cursor:pointer}
+.title{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:4px 0 2px}
+.sum{font-size:11.5px;color:#6a6660;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{font-size:10px;color:var(--muted);font-weight:600;display:flex;gap:6px}
+.pill{background:var(--pill);border-radius:99px;padding:2px 7px;font-size:9.5px;font-weight:800}
+#more{width:calc(100% - 20px);margin:10px auto 20px;display:block;border:1px solid var(--border);background:var(--card);border-radius:99px;padding:12px;font-weight:800;font-size:12px;cursor:pointer}
+#postView{display:none;min-height:calc(100vh - 44px);background:#fffdfa}
+#postView.open{display:block}
+.ptitle{padding:18px 18px 0;font-size:21px;font-weight:900;line-height:1.25}
+.pmeta{padding:8px 18px;color:var(--muted);font-size:11px;display:flex;gap:6px;flex-wrap:wrap}
+.pbody{padding:14px 18px 40px;line-height:1.75;font-size:14.5px;word-break:break-word}
+.pbody img{max-width:100%;border-radius:14px;margin:14px 0;display:block;background:var(--pill)}
+.pbody iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:14px;margin:14px 0;background:#000}
+.pbody a{color:#b42318;word-break:break-all}
+.pbody h1,.pbody h2,.pbody h3{line-height:1.3;margin:18px 0 8px}
+.pbody blockquote{border-left:3px solid var(--border);margin:12px 0;padding:6px 14px;color:#6a6660;background:#faf6ef}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="l"><div class="brand" id="brandBtn"><span class="dot"></span><b>HIVE • WUZZ</b></div><button class="btn" id="backBtn" style="display:none">← Feed</button></div>
+  <div class="l"><span id="headAuthor" style="display:none;font-size:11px;font-weight:800;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span><select id="sort"><option value="created">Newest</option><option value="trending">Trending 🔥</option><option value="hot">Hot</option></select><button class="btn" id="shareBtn" style="display:none">Share ↗</button></div>
+</div>
+<div class="wrap">
+<div id="log"><span id="logL">siap</span><span id="logR"></span></div>
+<div id="list"></div>
+<div id="postView"><div class="ptitle" id="ptitle"></div><div class="pmeta" id="pmeta"></div><div class="pbody" id="pbody"></div></div>
+<button id="more">Load 10 lagi ↓</button>
+</div>
+
+<script>
+// === DETEKSI BASE PATH UNTUK GITHUB PAGES ===
+function getBasePath(){
+  // contoh: /repo/@author/permlink -> /repo/, /@author/permlink -> /
+  const path = location.pathname;
+  const atIdx = path.indexOf('/@');
+  if(atIdx>0) return path.substring(0, atIdx+1); // termasuk slash
+  // kalau di root github /repo/
+  const seg = path.split('/').filter(Boolean);
+  if(seg.length===1 &&!path.includes('@')){ // /repo/
+    // cek apakah ini github.io dengan repo name
+    if(location.hostname.endsWith('github.io')) return '/'+seg[0]+'/';
+  }
+  return '/';
+}
+const BASE = getBasePath();
+
+let sort='created',allPosts=[],displayed=0,busy=false,lastAuthor='',lastPermlink='',seen=new Set(),curAuthor='',curPermlink='';
+const listEl=document.getElementById('list'),logL=document.getElementById('logL'),logR=document.getElementById('logR'),moreBtn=document.getElementById('more'),sortEl=document.getElementById('sort'),postView=document.getElementById('postView');
+const brandBtn=document.getElementById('brandBtn'),backBtn=document.getElementById('backBtn'),headAuthor=document.getElementById('headAuthor'),shareBtn=document.getElementById('shareBtn');
+const ptitle=document.getElementById('ptitle'),pmeta=document.getElementById('pmeta'),pbody=document.getElementById('pbody');
+
+function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function ago(v){let d=new Date(v+'Z');if(isNaN(d))d=new Date(v);let s=Math.floor((Date.now()-d)/1000);if(s<60)return s+'d lalu';if(s<3600)return Math.floor(s/60)+'m lalu';if(s<86400)return Math.floor(s/3600)+'j lalu';return Math.floor(s/86400)+'h lalu';}
+async function fetchTimeout(url,body,to=3500){let c=new AbortController();let t=setTimeout(()=>c.abort(),to);try{let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:c.signal});if(!r.ok)throw new Error('HTTP');return await r.json();}finally{clearTimeout(t);}}
+async function hiveFetchBatch(isNext){
+  let method=`condenser_api.get_discussions_by_${sort}`;
+  let params={tag:'',limit:20}; if(isNext&&lastAuthor){params.start_author=lastAuthor; params.start_permlink=lastPermlink;}
+  let body={jsonrpc:'2.0',method,params:[params],id:1};
+  let eps=['https://api.hive.blog','https://api.deathwing.me','https://api.openhive.network'];
+  let data=await Promise.any(eps.map(u=>fetchTimeout(u,body,3500).then(j=>{if(j.error)throw j.error; if(!Array.isArray(j.result))throw 'x'; return j.result;})));
+  if(isNext&&data.length) data=data.slice(1); return data;
+}
+function addToCache(posts){for(let p of posts){let k=p.author+'/'+p.permlink; if(!seen.has(k)){seen.add(k); allPosts.push(p);}} if(posts.length){let l=posts[posts.length-1]; lastAuthor=l.author; lastPermlink=l.permlink;}}
+function render10(){
+  let next=allPosts.slice(displayed,displayed+10); if(!next.length) return false;
+  let h='';for(let x of next){
+    let payout=parseFloat(String(x.pending_payout_value||'').replace(/[^\d.]/g,''))||0;
+    let body=String(x.body||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,80);
+    let likes=x.active_votes?x.active_votes.length:(x.net_votes||0);
+    h+=`<div class="item" data-a="${esc(x.author)}" data-p="${esc(x.permlink)}"><div class="meta"><b>@${esc(x.author)}</b><span>•</span>${ago(x.created)}</div><div class="title">${esc(x.title||'(tanpa judul)')}</div><div class="sum">${esc(body)}</div><div style="margin-top:6px;display:flex;gap:6px"><span class="pill">💬 ${x.children??0}</span><span class="pill">♥ ${likes}</span><span class="pill">$${payout.toFixed(2)}</span></div></div>`;
+  }
+  listEl.insertAdjacentHTML('beforeend',h); displayed+=next.length; logL.textContent=`${displayed}/${allPosts.length} • BASE:${BASE}`; logR.textContent=sort;
+  if(allPosts.length-displayed<12) loadBatch(true); return true;
+}
+async function loadBatch(isNext){if(busy)return; busy=true; moreBtn.textContent='...'; try{let d=await hiveFetchBatch(isNext); addToCache(d); render10();}catch(e){logL.textContent='ERROR';}finally{busy=false; moreBtn.textContent='Load 10 lagi ↓';}}
+function renderFullContent(md){
+  let raw=md||'';
+  raw=raw.replace(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{6,11})[^\s]*/g,(m,id)=>`\n\n<iframe src="https://www.youtube.com/embed/${id}" loading="lazy" allowfullscreen></iframe>\n\n`);
+  raw=raw.replace(/https?:\/\/3speak\.(?:tv|online)\/watch\?v=([^\s\/]+)/g,(m,id)=>`\n\n<iframe src="https://3speak.tv/embed?v=${id}" loading="lazy" allowfullscreen></iframe>\n\n`);
+  let html=marked.parse(raw,{breaks:true,gfm:true});
+  html=html.replace(/<img /g,'<img loading="lazy" onerror="this.style.display=\'none\'" ');
+  return html;
+}
+function openPost(author,permlink, push=true){
+  curAuthor=author; curPermlink=permlink;
+  listEl.style.display='none'; moreBtn.style.display='none'; postView.classList.add('open');
+  brandBtn.style.display='none'; backBtn.style.display=''; headAuthor.style.display=''; shareBtn.style.display=''; sortEl.style.display='none';
+  headAuthor.textContent='@'+author; window.scrollTo(0,0);
+  if(push){
+    const niceUrl = BASE.replace(/\/$/,'') + `/@${author}/${permlink}`;
+    history.pushState({post:true, author, permlink}, '', niceUrl);
+  }
+  ptitle.textContent='Loading...'; pmeta.textContent=''; pbody.innerHTML='Fetching dari Hive...';
+  (async()=>{
+    try{
+      let body={jsonrpc:'2.0',method:'condenser_api.get_content',params:[author,permlink],id:1};
+      let j=await Promise.any(['https://api.hive.blog','https://api.deathwing.me'].map(u=>fetchTimeout(u,body,4000)));
+      let p=j.result; if(!p.author)throw new Error('not found');
+      ptitle.textContent=p.title||'(tanpa judul)';
+      let payout=parseFloat(String(p.pending_payout_value||'').replace(/[^\d.]/g,''))||0;
+      pmeta.textContent=`@${p.author} • ${ago(p.created)} • #${p.category} • ♥ ${(p.active_votes||[]).length} • $${payout.toFixed(2)}`;
+      pbody.innerHTML=renderFullContent(p.body||'') + `<hr style="margin:24px 0;border:0;border-top:1px solid var(--border)"><div style="display:flex;gap:8px;flex-wrap:wrap"><a href="https://peakd.com/@${esc(author)}/${esc(permlink)}" target="_blank" style="border:1px solid var(--border);padding:8px 14px;border-radius:99px;text-decoration:none;font-weight:800;font-size:12px;color:var(--text)">PeakD ↗</a><a href="https://ecency.com/@${esc(author)}/${esc(permlink)}" target="_blank" style="border:1px solid var(--border);padding:8px 14px;border-radius:99px;text-decoration:none;font-weight:800;font-size:12px;color:var(--text)">Ecency ↗</a></div>`;
+    }catch(e){ pbody.innerHTML='Gagal: '+esc(e.message); }
+  })();
+}
+function showList(push=true){
+  listEl.style.display=''; moreBtn.style.display=''; postView.classList.remove('open');
+  brandBtn.style.display=''; backBtn.style.display='none'; headAuthor.style.display='none'; shareBtn.style.display='none'; sortEl.style.display='';
+  curAuthor=''; curPermlink='';
+  if(push) history.pushState({},'',BASE);
+}
+backBtn.addEventListener('click', ()=>showList(true));
+brandBtn.addEventListener('click', ()=>showList(true));
+listEl.addEventListener('click', e=>{let it=e.target.closest('.item'); if(it) openPost(it.dataset.a,it.dataset.p,true);});
+shareBtn.addEventListener('click', ()=>{
+  let url=location.href;
+  if(navigator.share){navigator.share({title:ptitle.textContent,url});}
+  else {navigator.clipboard.writeText(url); shareBtn.textContent='Copied!'; setTimeout(()=>shareBtn.textContent='Share ↗',1200);}
+});
+window.addEventListener('popstate', e=>{
+  const st=e.state;
+  if(st && st.post){ openPost(st.author, st.permlink, false); }
+  else {
+    // cek URL sekarang
+    const m=location.pathname.match(/@([^\/]+)\/([^\/]+)/);
+    if(m) openPost(m[1],m[2],false);
+    else showList(false);
+  }
+});
+// ROUTING AWAL - deteksi langsung buka post
+(function initRoute(){
+  // support /@author/permlink dan /repo/@author/permlink
+  const m=location.pathname.match(/@([^\/]+)\/([^\/]+)/);
+  const mh=location.hash.match(/@([^\/]+)\/([^\/]+)/);
+  if(m) openPost(m[1],m[2],false);
+  else if(mh) openPost(mh[1],mh[2],true);
+})();
+async function reset(){allPosts=[]; displayed=0; lastAuthor=''; lastPermlink=''; seen=new Set(); listEl.innerHTML=''; await loadBatch(false);}
+sortEl.onchange=()=>{sort=sortEl.value; reset();};
+moreBtn.onclick=async()=>{if(displayed<allPosts.length)render10(); else await loadBatch(true);};
+reset();
+</script>
+</body>
+</html>
