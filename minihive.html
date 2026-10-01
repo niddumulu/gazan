@@ -2,46 +2,75 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hive Wuzz • Compact</title>
+<title>Hive Wuzz • Human Layout</title>
 <style>
 :root{--outer:#e8e2d8;--bg:#f6f2eb;--card:#fff;--border:#e8e0d4;--text:#1e1c18;--muted:#8f8a82;--pill:#f2ece3;--accent:#ff3b30}
 *{box-sizing:border-box}body{margin:0;background:var(--outer);color:var(--text);font-family:ui-sans-system,-apple-system,BlinkMacSystemFont,"Inter",system-ui,sans-serif}
-.top{position:sticky;top:0;z-index:20;background:rgba(232,226,216,.9);backdrop-filter:blur(12px);border-bottom:1px solid #d9d0c2;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
-.brand{display:flex;gap:8px;align-items:center}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(255,59,48,.12)}
-.brand b{font-size:12px;letter-spacing:.1em;font-weight:900}
+.top{position:sticky;top:0;z-index:30;background:rgba(232,226,216,.96);backdrop-filter:blur(12px);border-bottom:1px solid #d9d0c2;padding:0 12px;height:44px;display:flex;justify-content:space-between;align-items:center}
+.leftH{display:flex;align-items:center;gap:10px}.brand{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:.1em;font-size:12px;cursor:pointer}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.rightH{display:flex;align-items:center;gap:8px}
+.iconBtn{border:1px solid var(--border);background:var(--card);border-radius:99px;padding:6px 12px;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px}
+.iconBtn:active{transform:scale(.97)}
 select{border:1px solid var(--border);background:var(--card);border-radius:99px;padding:6px 12px;font-size:11px;font-weight:700}
-.wrap{max-width:540px;margin:0 auto;background:var(--bg);min-height:100vh;border-left:1px solid var(--border);border-right:1px solid var(--border)}
-#log{padding:6px 14px;font-size:10px;color:var(--muted);font-family:ui-monospace,Menlo,monospace;border-bottom:1px solid var(--border)}
+.wrap{max-width:560px;margin:0 auto;background:var(--bg);min-height:100vh;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+#log{padding:6px 14px;font-size:10px;color:var(--muted);font-family:ui-monospace,Menlo,monospace;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
 #list{padding:8px 10px 20px}
-/* COMPACT CARD - tinggi konsisten 88px */
-.item{display:flex;flex-direction:column;justify-content:center;min-height:88px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 14px;margin:7px 0;text-decoration:none;color:inherit}
-.item:active{transform:scale(.99)}
-.meta{font-size:10px;color:var(--muted);font-weight:600;display:flex;gap:6px;align-items:center;white-space:nowrap;overflow:hidden}
-.meta b{color:var(--text)}
-.title{font-size:13.5px;line-height:1.3;font-weight:700;margin:4px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* 1 baris saja */
-.sum{font-size:11.5px;line-height:1.3;color:#6a6660;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* 1 baris saja */
-.foot{display:flex;gap:6px;margin-top:6px}
-.pill{background:var(--pill);border-radius:99px;padding:2px 7px;font-size:9.5px;font-weight:800;color:#6b6560}
-#more{width:calc(100% - 20px);margin:0 auto 20px;display:block;border:1px solid var(--border);background:var(--card);border-radius:99px;padding:11px;font-weight:800;font-size:12px}
-@media(max-width:600px){.wrap{max-width:100%;border:0}#list{padding:6px 8px}.item{margin:6px 0;min-height:84px}}
+.item{min-height:86px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 14px;margin:7px 0;cursor:pointer}
+.item:hover{border-color:#c9beb0}
+.meta{font-size:10px;color:var(--muted);font-weight:600;display:flex;gap:6px;white-space:nowrap;overflow:hidden}.meta b{color:var(--text)}
+.title{font-size:13.5px;font-weight:700;margin:4px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum{font-size:11.5px;color:#6a6660;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foot{display:flex;gap:6px;margin-top:6px}.pill{background:var(--pill);border-radius:99px;padding:2px 7px;font-size:9.5px;font-weight:800}
+#more{width:calc(100% - 20px);margin:10px auto 20px;display:block;border:1px solid var(--border);background:var(--card);border-radius:99px;padding:12px;font-weight:800;font-size:12px;cursor:pointer}
+
+/* POST FULL */
+#postView{display:none;min-height:calc(100vh - 44px);background:#fffdfa}
+#postView.open{display:block}
+.ptitle{padding:18px 18px 0;font-size:20px;font-weight:900;line-height:1.25}
+.pmeta{padding:8px 18px;color:var(--muted);font-size:11px;display:flex;gap:8px;flex-wrap:wrap}
+.pbody{padding:14px 18px 40px;line-height:1.75;font-size:14.5px;word-break:break-word}
+.pbody img{max-width:100%;border-radius:14px;margin:12px 0;display:block;background:var(--pill)}
+.pbody iframe{width:100%;aspect-ratio:16/9;border:0;border-radius:14px;margin:12px 0;background:#000}
+.pbody a{color:#b42318}
 </style>
 </head>
 <body>
-<div class="top"><div class="brand"><span class="dot"></span><b>HIVE • WUZZ COMPACT</b></div><select id="sort"><option value="created">Newest</option><option value="trending">Trending</option><option value="hot">Hot</option></select></div>
-<div class="wrap"><div id="log">compact • 1 layar 6 post</div><div id="list"></div><button id="more">Load 10 lagi ↓</button></div>
+<div class="top">
+  <div class="leftH">
+    <div class="brand" id="brandBtn" onclick="showList()"><span class="dot"></span><b>HIVE • WUZZ</b></div>
+    <button class="iconBtn" id="backBtn" style="display:none" onclick="showList()">← Feed</button>
+  </div>
+  <div class="rightH">
+    <span id="headAuthor" style="display:none;font-size:11px;font-weight:800;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+    <select id="sort"><option value="created">Newest</option><option value="trending">Trending 🔥</option><option value="hot">Hot</option></select>
+    <button class="iconBtn" id="shareBtn" style="display:none" onclick="sharePost()">Share ↗</button>
+  </div>
+</div>
+
+<div class="wrap">
+<div id="log"><span id="logL">siap</span><span id="logR"></span></div>
+<div id="list"></div>
+<div id="postView"><div class="ptitle" id="ptitle"></div><div class="pmeta" id="pmeta"></div><div class="pbody" id="pbody"></div></div>
+<button id="more">Load 10 lagi ↓</button>
+</div>
+
 <script>
-let sort='created',allPosts=[],displayed=0,busy=false,lastAuthor='',lastPermlink='',seen=new Set();
-const listEl=document.getElementById('list'),logEl=document.getElementById('log'),moreBtn=document.getElementById('more'),sortEl=document.getElementById('sort');
+let sort='created',allPosts=[],displayed=0,busy=false,lastAuthor='',lastPermlink='',seen=new Set(),curAuthor='',curPermlink='';
+const listEl=document.getElementById('list'),logL=document.getElementById('logL'),logR=document.getElementById('logR'),moreBtn=document.getElementById('more'),sortEl=document.getElementById('sort'),postView=document.getElementById('postView');
+const brandBtn=document.getElementById('brandBtn'),backBtn=document.getElementById('backBtn'),headAuthor=document.getElementById('headAuthor'),shareBtn=document.getElementById('shareBtn');
+const ptitle=document.getElementById('ptitle'),pmeta=document.getElementById('pmeta'),pbody=document.getElementById('pbody');
+
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function ago(v){let d=new Date(v+'Z');if(isNaN(d))d=new Date(v);let s=Math.floor((Date.now()-d)/1000);if(s<60)return s+'d';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'j';return Math.floor(s/86400)+'h';}
-async function fetchTimeout(url,body,to=3800){let c=new AbortController();let t=setTimeout(()=>c.abort(),to);try{let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:c.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json();}finally{clearTimeout(t);}}
+function ago(v){let d=new Date(v+'Z');if(isNaN(d))d=new Date(v);let s=Math.floor((Date.now()-d)/1000);if(s<60)return s+'d lalu';if(s<3600)return Math.floor(s/60)+'m lalu';if(s<86400)return Math.floor(s/3600)+'j lalu';return Math.floor(s/86400)+'h lalu';}
+async function fetchTimeout(url,body,to=3500){let c=new AbortController();let t=setTimeout(()=>c.abort(),to);try{let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:c.signal});if(!r.ok)throw new Error('HTTP');return await r.json();}finally{clearTimeout(t);}}
+
 async function hiveFetchBatch(isNext){
   let method=`condenser_api.get_discussions_by_${sort}`;
   let params={tag:'',limit:20}; if(isNext&&lastAuthor){params.start_author=lastAuthor; params.start_permlink=lastPermlink;}
   let body={jsonrpc:'2.0',method,params:[params],id:1};
   let eps=['https://api.hive.blog','https://api.deathwing.me','https://api.openhive.network'];
-  let promises=eps.map(async url=>{try{let j=await fetchTimeout(url,body,3800); if(j.error)throw new Error(j.error.message); if(Array.isArray(j.result))return j.result; throw new Error('invalid');}catch(e){throw new Error('x');}});
-  let data=await Promise.any(promises); if(isNext&&data.length) data=data.slice(1); return data;
+  let data=await Promise.any(eps.map(u=>fetchTimeout(u,body,3500).then(j=>{if(j.error)throw j.error; if(!Array.isArray(j.result))throw 'x'; return j.result;})));
+  if(isNext&&data.length) data=data.slice(1); return data;
 }
 function addToCache(posts){for(let p of posts){let k=p.author+'/'+p.permlink; if(!seen.has(k)){seen.add(k); allPosts.push(p);}} if(posts.length){let l=posts[posts.length-1]; lastAuthor=l.author; lastPermlink=l.permlink;}}
 function render10(){
@@ -50,16 +79,55 @@ function render10(){
     let payout=parseFloat(String(x.pending_payout_value||'').replace(/[^\d.]/g,''))||0;
     let body=String(x.body||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,80);
     let likes=x.active_votes?x.active_votes.length:(x.net_votes||0);
-    h+=`<a class="item" href="https://peakd.com/@${esc(x.author)}/${esc(x.permlink)}" target="_blank"><div class="meta"><b>@${esc(x.author.slice(0,16))}</b><span>•</span><span>${ago(x.created)}</span><span>•</span><span>#${esc((x.category||'hive').slice(0,10))}</span></div><div class="title">${esc(x.title||'(tanpa judul)')}</div><div class="sum">${esc(body)}</div><div class="foot"><span class="pill">💬 ${x.children??0}</span><span class="pill">♥ ${likes}</span><span class="pill">$${payout.toFixed(2)}</span></div></a>`;
+    h+=`<div class="item" onclick="openPost('${esc(x.author)}','${esc(x.permlink)}')"><div class="meta"><b>@${esc(x.author)}</b><span>•</span>${ago(x.created)}<span>•</span>#${esc((x.category||'hive').slice(0,10))}</div><div class="title">${esc(x.title||'(tanpa judul)')}</div><div class="sum">${esc(body)}</div><div class="foot"><span class="pill">💬 ${x.children??0}</span><span class="pill">♥ ${likes}</span><span class="pill">$${payout.toFixed(2)}</span></div></div>`;
   }
-  listEl.insertAdjacentHTML('beforeend',h); displayed+=next.length;
-  logEl.textContent=`${displayed}/${allPosts.length} • ${sort}`;
-  if(allPosts.length-displayed<12) loadBatch(true);
-  return true;
+  listEl.insertAdjacentHTML('beforeend',h); displayed+=next.length; logL.textContent=`${displayed}/${allPosts.length}`; logR.textContent=sort;
+  if(allPosts.length-displayed<12) loadBatch(true); return true;
 }
-async function loadBatch(isNext){if(busy)return; busy=true; moreBtn.textContent='...'; try{let d=await hiveFetchBatch(isNext); addToCache(d); render10();}catch(e){logEl.textContent='ERROR';}finally{busy=false; moreBtn.textContent='Load 10 lagi ↓';}}
-async function reset(){allPosts=[]; displayed=0; lastAuthor=''; lastPermlink=''; seen=new Set(); listEl.innerHTML=''; await loadBatch(false);}
-sortEl.onchange=()=>{sort=sortEl.value; reset();}; moreBtn.onclick=async()=>{if(displayed<allPosts.length)render10(); else await loadBatch(true);}; reset();
+async function loadBatch(isNext){if(busy)return; busy=true; moreBtn.textContent='...'; try{let d=await hiveFetchBatch(isNext); addToCache(d); render10();}catch(e){logL.textContent='ERROR';}finally{busy=false; moreBtn.textContent='Load 10 lagi ↓';}}
+
+function renderHiveContent(raw){
+  let txt=raw||''; let images=[];
+  txt=txt.replace(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{6,11})[^\s]*/g,(m,id)=>`\n[YT:${id}]\n`);
+  txt=txt.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s\)]+)\)/g,(m,alt,url)=>{images.push(url); return `\n[IMG:${images.length-1}]\n`;});
+  txt=txt.replace(/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/gi,m=>{images.push(m); return `\n[IMG:${images.length-1}]\n`;});
+  let parts=txt.split(/(\[IMG:\d+\]|\[YT:[^\]]+\]|\n)/g); let html='';
+  for(let p of parts){
+    let mi=p.match(/^\[IMG:(\d+)\]$/),my=p.match(/^\[YT:([A-Za-z0-9_-]+)\]$/);
+    if(mi){let url=images[+mi[1]]; html+=`<img src="${esc(url)}" loading="lazy" onerror="this.style.display='none'">`;}
+    else if(my){html+=`<iframe src="https://www.youtube.com/embed/${esc(my[1])}" loading="lazy" allowfullscreen></iframe>`;}
+    else if(p==='\n') html+='<br>';
+    else html+=esc(p).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank">$1</a>');
+  }
+  return html;
+}
+
+async function openPost(author,permlink){
+  curAuthor=author; curPermlink=permlink;
+  listEl.style.display='none'; moreBtn.style.display='none'; postView.classList.add('open');
+  brandBtn.style.display='none'; backBtn.style.display=''; headAuthor.style.display=''; shareBtn.style.display=''; sortEl.style.display='none';
+  headAuthor.textContent='@'+author; window.scrollTo(0,0);
+  ptitle.textContent='Loading...'; pmeta.textContent=''; pbody.innerHTML='Fetching...';
+  try{
+    let body={jsonrpc:'2.0',method:'condenser_api.get_content',params:[author,permlink],id:1};
+    let j=await Promise.any(['https://api.hive.blog','https://api.deathwing.me'].map(u=>fetchTimeout(u,body,4000)));
+    let p=j.result; if(!p.author)throw new Error('not found');
+    ptitle.textContent=p.title||'(tanpa judul)';
+    let payout=parseFloat(String(p.pending_payout_value||'').replace(/[^\d.]/g,''))||0;
+    pmeta.innerHTML=`<span>@${esc(p.author)}</span><span>•</span><span>${ago(p.created)}</span><span>•</span><span>#${esc(p.category)}</span><span>•</span><span>♥ ${(p.active_votes||[]).length}</span><span>•</span><span>$${payout.toFixed(2)}</span>`;
+    pbody.innerHTML=renderHiveContent(p.body||'');
+  }catch(e){ pbody.innerHTML='Gagal: '+esc(e.message); }
+}
+function showList(){
+  listEl.style.display=''; moreBtn.style.display=''; postView.classList.remove('open');
+  brandBtn.style.display=''; backBtn.style.display='none'; headAuthor.style.display='none'; shareBtn.style.display='none'; sortEl.style.display='';
+}
+function sharePost(){ if(!curAuthor) return; let url=`https://peakd.com/@${curAuthor}/${curPermlink}`; if(navigator.share){navigator.share({title:ptitle.textContent,url});} else {navigator.clipboard.writeText(url); shareBtn.textContent='Copied!'; setTimeout(()=>shareBtn.textContent='Share ↗',1500);} }
+
+async function reset(){allPosts=[]; displayed=0; lastAuthor=''; lastPermlink=''; seen=new Set(); listEl.innerHTML=''; showList(); await loadBatch(false);}
+sortEl.onchange=()=>{sort=sortEl.value; reset();};
+moreBtn.onclick=async()=>{if(displayed<allPosts.length)render10(); else await loadBatch(true);};
+reset();
 </script>
 </body>
 </html>
