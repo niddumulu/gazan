@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hive Wuzz • Final GitHub Ready</title>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+
+<style>
+:root{
+  --outer:#e8e2d8;
+  --bg:#f6f2eb;
+  --card:#fff;
+  --border:#e8e0d4;
+  --text:#1e1c18;
+  --muted:#8f8a82;
+  --pill:#f2ece3;
+  --accent:#ff3b30
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--outer);
+  color:var(--text);
+  font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Inter",system-ui,sans-serif
+}
+
+.top{
+  position:sticky;
+  top:0;
+  z-index:40;
+  background:rgba(232,226,216,.98);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid #d9d0c2;
+  height:44px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 10px
+}
+
+.l{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0
+}
+
+.brand{
+  font-weight:900;
+  letter-spacing:.1em;
+  font-size:12px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  cursor:pointer;
+  white-space:nowrap
+}
+
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--accent)
+}
+
+.btn{
+  border:1px solid var(--border);
+  background:var(--card);
+  border-radius:99px;
+  padding:7px 14px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer
+}
+
+.btn:active{
+  transform:scale(.97)
+}
+
+select{
+  border:1px solid var(--border);
+  background:var(--card);
+  border-radius:99px;
+  padding:6px 12px;
+  font-size:11px;
+  font-weight:700;
+  max-width:110px
+}
+
+.wrap{
+  max-width:580px;
+  margin:0 auto;
+  background:var(--bg);
+  min-height:100vh;
+  border-left:1px solid var(--border);
+  border-right:1px solid var(--border)
+}
+
+#log{
+  padding:6px 14px;
+  font-size:10px;
+  color:var(--muted);
+  font-family:ui-monospace,Menlo,monospace;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  gap:10px
+}
+
+#logL,
+#logR{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+
+#list{
+  padding:8px 10px 20px
+}
+
+.item{
+  min-height:86px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:10px 14px;
+  margin:7px 0;
+  cursor:pointer
+}
+
+.item:active{
+  transform:scale(.995)
+}
+
+.title{
+  font-size:13.5px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  margin:4px 0 2px
+}
+
+.sum{
+  font-size:11.5px;
+  color:#6a6660;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+
+.meta{
+  font-size:10px;
+  color:var(--muted);
+  font-weight:600;
+  display:flex;
+  gap:6px;
+  overflow:hidden
+}
+
+.meta b{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+
+.pill{
+  background:var(--pill);
+  border-radius:99px;
+  padding:2px 7px;
+  font-size:9.5px;
+  font-weight:800;
+  white-space:nowrap
+}
+
+#more{
+  width:calc(100% - 20px);
+  margin:10px auto 20px;
+  display:block;
+  border:1px solid var(--border);
+  background:var(--card);
+  border-radius:99px;
+  padding:12px;
+  font-weight:800;
+  font-size:12px;
+  cursor:pointer
+}
+
+#more:disabled{
+  opacity:.5;
+  cursor:default
+}
+
+#postView{
+  display:none;
+  min-height:calc(100vh - 44px);
+  background:#fffdfa
+}
+
+#postView.open{
+  display:block
+}
+
+.ptitle{
+  padding:18px 18px 0;
+  font-size:21px;
+  font-weight:900;
+  line-height:1.25
+}
+
+.pmeta{
+  padding:8px 18px;
+  color:var(--muted);
+  font-size:11px;
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap
+}
+
+.pbody{
+  padding:14px 18px 40px;
+  line-height:1.75;
+  font-size:14.5px;
+  word-break:break-word
+}
+
+.pbody img{
+  max-width:100%;
+  height:auto;
+  border-radius:14px;
+  margin:14px 0;
+  display:block;
+  background:var(--pill)
+}
+
+.pbody iframe{
+  width:100%;
+  aspect-ratio:16/9;
+  border:0;
+  border-radius:14px;
+  margin:14px 0;
+  background:#000
+}
+
+.pbody a{
+  color:#b42318;
+  word-break:break-all
+}
+
+.pbody h1,
+.pbody h2,
+.pbody h3{
+  line-height:1.3;
+  margin:18px 0 8px
+}
+
+.pbody blockquote{
+  border-left:3px solid var(--border);
+  margin:12px 0;
+  padding:6px 14px;
+  color:#6a6660;
+  background:#faf6ef
+}
+
+.pbody pre{
+  overflow:auto;
+  background:#f3eee6;
+  padding:12px;
+  border-radius:10px
+}
+
+.pbody code{
+  font-size:.9em
+}
+
+.loading{
+  text-align:center;
+  color:var(--muted);
+  padding:30px 10px
+}
+
+.error{
+  text-align:center;
+  color:#b42318;
+  padding:30px 10px
+}
+
+@media(max-width:600px){
+  .top{
+    padding:0 8px
+  }
+
+  .brand{
+    font-size:11px
+  }
+
+  .btn{
+    padding:7px 11px
+  }
+
+  .ptitle{
+    font-size:20px
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+
+  <div class="l">
+
+    <div class="brand" id="brandBtn">
+      <span class="dot"></span>
+      <b>HIVE • WUZZ</b>
+    </div>
+
+    <button class="btn" id="backBtn" style="display:none">
+      ← Feed
+    </button>
+
+  </div>
+
+  <div class="l">
+
+    <span
+      id="headAuthor"
+      style="display:none;font-size:11px;font-weight:800;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+    </span>
+
+    <select id="sort">
+      <option value="created">Newest</option>
+      <option value="trending">Trending 🔥</option>
+      <option value="hot">Hot</option>
+    </select>
+
+    <button class="btn" id="shareBtn" style="display:none">
+      Share ↗
+    </button>
+
+  </div>
+
+</div>
+
+<div class="wrap">
+
+  <div id="log">
+    <span id="logL">siap</span>
+    <span id="logR"></span>
+  </div>
+
+  <div id="list"></div>
+
+  <div id="postView">
+
+    <div class="ptitle" id="ptitle"></div>
+
+    <div class="pmeta" id="pmeta"></div>
+
+    <div class="pbody" id="pbody"></div>
+
+  </div>
+
+  <button id="more">
+    Load 10 lagi ↓
+  </button>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CONFIG
+========================================================= */
+
+const API_ENDPOINTS = [
+  "https://api.hive.blog",
+  "https://api.deathwing.me",
+  "https://api.openhive.network"
+];
+
+const POST_ENDPOINTS = [
+  "https://api.hive.blog",
+  "https://api.deathwing.me",
+  "https://api.openhive.network"
+];
+
+
+/* =========================================================
+   BASE PATH — GITHUB PAGES / CUSTOM DOMAIN
+========================================================= */
+
+function getBasePath(){
+
+  const path = location.pathname;
+
+  /*
+    Contoh:
+    /repo/@user/post
+    => /repo/
+
+    /@user/post
+    => /
+
+    /repo/
+    => /repo/
+  */
+
+  const atIdx = path.indexOf("/@");
+
+  if(atIdx >= 0){
+    return path.substring(0,atIdx + 1);
+  }
+
+  const clean = path.replace(/^\/+|\/+$/g,"");
+
+  if(!clean){
+    return "/";
+  }
+
+  const parts = clean.split("/");
+
+  /*
+    GitHub Pages:
+    username.github.io/repository/
+  */
+
+  if(
+    location.hostname.endsWith("github.io") &&
+    parts.length === 1 &&
+    !parts[0].startsWith("@")
+  ){
+    return "/" + parts[0] + "/";
+  }
+
+  return "/";
+}
+
+const BASE = getBasePath();
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let sort = "created";
+
+let allPosts = [];
+let displayed = 0;
+
+let busy = false;
+let loadingToken = 0;
+
+let lastAuthor = "";
+let lastPermlink = "";
+
+let seen = new Set();
+
+let curAuthor = "";
+let curPermlink = "";
+
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const listEl = document.getElementById("list");
+const logL = document.getElementById("logL");
+const logR = document.getElementById("logR");
+
+const moreBtn = document.getElementById("more");
+const sortEl = document.getElementById("sort");
+
+const postView = document.getElementById("postView");
+
+const brandBtn = document.getElementById("brandBtn");
+const backBtn = document.getElementById("backBtn");
+const headAuthor = document.getElementById("headAuthor");
+const shareBtn = document.getElementById("shareBtn");
+
+const ptitle = document.getElementById("ptitle");
+const pmeta = document.getElementById("pmeta");
+const pbody = document.getElementById("pbody");
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function esc(v){
+
+  return String(v ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+
+function ago(v){
+
+  if(!v) return "";
+
+  let d = new Date(v);
+
+  /*
+    Hive biasanya memberi:
+    2026-10-01T12:00:00
+    tanpa timezone.
+  */
+
+  if(isNaN(d)){
+    d = new Date(v + "Z");
+  }
+
+  if(isNaN(d)) return "";
+
+  let s = Math.floor((Date.now() - d.getTime()) / 1000);
+
+  if(s < 0) s = 0;
+
+  if(s < 60) return s + "d lalu";
+
+  if(s < 3600){
+    return Math.floor(s / 60) + "m lalu";
+  }
+
+  if(s < 86400){
+    return Math.floor(s / 3600) + "j lalu";
+  }
+
+  return Math.floor(s / 86400) + "h lalu";
+}
+
+
+function payoutValue(v){
+
+  const n = parseFloat(
+    String(v || "").replace(/[^\d.-]/g,"")
+  );
+
+  return Number.isFinite(n) ? n : 0;
+}
+
+
+/* =========================================================
+   FETCH JSON-RPC
+========================================================= */
+
+async function fetchTimeout(
+  url,
+  body,
+  timeout = 4000
+){
+
+  const controller = new AbortController();
+
+  const timer = setTimeout(
+    () => controller.abort(),
+    timeout
+  );
+
+  try{
+
+    const r = await fetch(
+      url,
+      {
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify(body),
+        signal:controller.signal
+      }
+    );
+
+    if(!r.ok){
+      throw new Error("HTTP " + r.status);
+    }
+
+    const j = await r.json();
+
+    if(j.error){
+      throw new Error(
+        j.error.message || "Hive API error"
+      );
+    }
+
+    return j;
+
+  }finally{
+
+    clearTimeout(timer);
+
+  }
+}
+
+
+/* =========================================================
+   HIVE DISCUSSION API
+========================================================= */
+
+async function hiveFetchBatch(isNext){
+
+  const method =
+    `condenser_api.get_discussions_by_${sort}`;
+
+  const params = {
+    tag:"",
+    limit:20
+  };
+
+  /*
+    Pagination Hive:
+    start_author + start_permlink
+    menunjuk post terakhir dari batch sebelumnya.
+  */
+
+  if(
+    isNext &&
+    lastAuthor &&
+    lastPermlink
+  ){
+
+    params.start_author = lastAuthor;
+    params.start_permlink = lastPermlink;
+
+  }
+
+  const body = {
+    jsonrpc:"2.0",
+    method,
+    params:[params],
+    id:Date.now()
+  };
+
+  /*
+    Promise.any membuat API tercepat yang berhasil
+    menjadi sumber data.
+  */
+
+  const requests = API_ENDPOINTS.map(
+    endpoint =>
+      fetchTimeout(endpoint,body,4500)
+      .then(j => {
+
+        if(!Array.isArray(j.result)){
+          throw new Error("Invalid result");
+        }
+
+        return j.result;
+
+      })
+  );
+
+  let data = await Promise.any(requests);
+
+  /*
+    Jika pagination mengembalikan kembali post cursor,
+    buang item pertama agar tidak duplicate.
+  */
+
+  if(
+    isNext &&
+    data.length &&
+    lastAuthor &&
+    lastPermlink &&
+    data[0].author === lastAuthor &&
+    data[0].permlink === lastPermlink
+  ){
+
+    data = data.slice(1);
+
+  }
+
+  return data;
+}
+
+
+/* =========================================================
+   CACHE
+========================================================= */
+
+function addToCache(posts){
+
+  for(const p of posts){
+
+    if(!p || !p.author || !p.permlink){
+      continue;
+    }
+
+    const key =
+      p.author + "/" + p.permlink;
+
+    if(!seen.has(key)){
+
+      seen.add(key);
+      allPosts.push(p);
+
+    }
+
+  }
+
+  if(posts.length){
+
+    /*
+      Gunakan post TERAKHIR yang diterima,
+      bukan post terakhir yang lolos duplicate.
+    */
+
+    const last = posts[posts.length - 1];
+
+    if(last){
+
+      lastAuthor = last.author || "";
+      lastPermlink = last.permlink || "";
+
+    }
+
+  }
+}
+
+
+/* =========================================================
+   RENDER FEED
+========================================================= */
+
+function render10(){
+
+  const next =
+    allPosts.slice(
+      displayed,
+      displayed + 10
+    );
+
+  if(!next.length){
+
+    updateMoreButton();
+
+    return false;
+  }
+
+  let html = "";
+
+  for(const x of next){
+
+    const payout =
+      payoutValue(
+        x.pending_payout_value
+      );
+
+    /*
+      Ringkasan:
+      body Hive bisa berisi Markdown/HTML.
+      Bersihkan dulu.
+    */
+
+    let body =
+      String(x.body || "")
+        .replace(/<[^>]*>/g," ")
+        .replace(/!\[[^\]]*\]\([^)]+\)/g," ")
+        .replace(/\[[^\]]*\]\([^)]+\)/g," ")
+        .replace(/\s+/g," ")
+        .trim()
+        .slice(0,100);
+
+    const likes =
+      Array.isArray(x.active_votes)
+        ? x.active_votes.length
+        : (x.net_votes || 0);
+
+    html += `
+      <div
+        class="item"
+        data-a="${esc(x.author)}"
+        data-p="${esc(x.permlink)}"
+      >
+
+        <div class="meta">
+
+          <b>@${esc(x.author)}</b>
+
+          <span>•</span>
+
+          <span>${esc(ago(x.created))}</span>
+
+        </div>
+
+        <div class="title">
+          ${esc(x.title || "(tanpa judul)")}
+        </div>
+
+        <div class="sum">
+          ${esc(body)}
+        </div>
+
+        <div style="margin-top:6px;display:flex;gap:6px">
+
+          <span class="pill">
+            💬 ${Number(x.children || 0)}
+          </span>
+
+          <span class="pill">
+            ♥ ${Number(likes || 0)}
+          </span>
+
+          <span class="pill">
+            $${payout.toFixed(2)}
+          </span>
+
+        </div>
+
+      </div>
+    `;
+  }
+
+  listEl.insertAdjacentHTML(
+    "beforeend",
+    html
+  );
+
+  displayed += next.length;
+
+  updateLog();
+
+  /*
+    Pre-fetch jika hampir habis.
+  */
+
+  if(
+    allPosts.length - displayed < 12 &&
+    !busy
+  ){
+
+    loadBatch(true);
+
+  }
+
+  updateMoreButton();
+
+  return true;
+}
+
+
+/* =========================================================
+   LOG
+========================================================= */
+
+function updateLog(){
+
+  logL.textContent =
+    `${displayed}/${allPosts.length} • BASE:${BASE}`;
+
+  logR.textContent = sort;
+}
+
+
+/* =========================================================
+   MORE BUTTON
+========================================================= */
+
+function updateMoreButton(){
+
+  if(
+    displayed < allPosts.length
+  ){
+
+    moreBtn.style.display = "block";
+    moreBtn.disabled = false;
+    moreBtn.textContent =
+      "Tampilkan 10 lagi ↓";
+
+  }else{
+
+    /*
+      Kalau masih mungkin mengambil data berikutnya,
+      tombol tetap aktif.
+    */
+
+    moreBtn.style.display = "block";
+    moreBtn.disabled = busy;
+
+    moreBtn.textContent =
+      busy
+        ? "Memuat..."
+        : "Load 10 lagi ↓";
+
+  }
+}
+
+
+/* =========================================================
+   LOAD BATCH
+========================================================= */
+
+async function loadBatch(isNext = false){
+
+  if(busy) return;
+
+  busy = true;
+
+  const myToken = loadingToken;
+
+  moreBtn.disabled = true;
+  moreBtn.textContent = "Memuat...";
+
+  try{
+
+    const data =
+      await hiveFetchBatch(isNext);
+
+    /*
+      Kalau user sudah mengganti sorting / reset
+      ketika request lama selesai, jangan masukkan
+      data lama ke feed baru.
+    */
+
+    if(myToken !== loadingToken){
+      return;
+    }
+
+    if(!Array.isArray(data) || !data.length){
+
+      if(!isNext && !allPosts.length){
+
+        listEl.innerHTML =
+          `<div class="loading">Tidak ada post.</div>`;
+
+      }
+
+      updateMoreButton();
+
+      return;
+    }
+
+    const before =
+      allPosts.length;
+
+    addToCache(data);
+
+    /*
+      Jika semua hasil ternyata duplicate,
+      coba sekali lagi dengan cursor baru.
+    */
+
+    if(
+      allPosts.length === before &&
+      isNext
+    ){
+
+      updateMoreButton();
+
+      return;
+    }
+
+    render10();
+
+  }catch(e){
+
+    console.error(e);
+
+    if(!allPosts.length){
+
+      listEl.innerHTML = `
+        <div class="error">
+          Gagal mengambil data Hive.<br>
+          <small>${esc(e.message || "API error")}</small>
+        </div>
+      `;
+
+    }
+
+    logL.textContent = "ERROR API";
+
+    moreBtn.disabled = false;
+    moreBtn.textContent =
+      "Coba lagi ↻";
+
+  }finally{
+
+    if(myToken === loadingToken){
+
+      busy = false;
+
+      updateMoreButton();
+
+    }
+
+  }
+}
+
+
+/* =========================================================
+   MARKDOWN + MEDIA
+========================================================= */
+
+function renderFullContent(md){
+
+  let raw = String(md || "");
+
+  /*
+    YouTube
+  */
+
+  raw = raw.replace(
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{6,11})(?:[^\s]*)/gi,
+    "\n\n<iframe src=\"https://www.youtube.com/embed/$1\" loading=\"lazy\" allowfullscreen></iframe>\n\n"
+  );
+
+  /*
+    3Speak
+  */
+
+  raw = raw.replace(
+    /https?:\/\/3speak\.(?:tv|online)\/watch\?v=([^\s\/]+)/gi,
+    "\n\n<iframe src=\"https://3speak.tv/embed?v=$1\" loading=\"lazy\" allowfullscreen></iframe>\n\n"
+  );
+
+  /*
+    Markdown -> HTML
+  */
+
+  let html =
+    marked.parse(
+      raw,
+      {
+        breaks:true,
+        gfm:true
+      }
+    );
+
+  /*
+    Sanitasi HTML dari post Hive.
+  */
+
+  html = DOMPurify.sanitize(
+    html,
+    {
+      ADD_TAGS:["iframe"],
+      ADD_ATTR:[
+        "allow",
+        "allowfullscreen",
+        "loading",
+        "src"
+      ],
+      ALLOW_UNKNOWN_PROTOCOLS:false
+    }
+  );
+
+  /*
+    Lazy image.
+  */
+
+  html =
+    html.replace(
+      /<img /gi,
+      '<img loading="lazy" '
+    );
+
+  /*
+    Hapus iframe selain provider yang kita izinkan.
+  */
+
+  const temp =
+    document.createElement("div");
+
+  temp.innerHTML = html;
+
+  temp.querySelectorAll("iframe").forEach(
+    iframe => {
+
+      const src =
+        iframe.getAttribute("src") || "";
+
+      if(
+        !(
+          src.startsWith(
+            "https://www.youtube.com/embed/"
+          ) ||
+          src.startsWith(
+            "https://3speak.tv/embed?"
+          )
+        )
+      ){
+
+        iframe.remove();
+
+      }
+
+    }
+  );
+
+  return temp.innerHTML;
+}
+
+
+/* =========================================================
+   OPEN POST
+========================================================= */
+
+function openPost(
+  author,
+  permlink,
+  push = true
+){
+
+  if(!author || !permlink) return;
+
+  curAuthor = author;
+  curPermlink = permlink;
+
+  listEl.style.display = "none";
+  moreBtn.style.display = "none";
+
+  postView.classList.add("open");
+
+  brandBtn.style.display = "none";
+  backBtn.style.display = "";
+
+  headAuthor.style.display = "";
+  shareBtn.style.display = "";
+
+  sortEl.style.display = "none";
+
+  headAuthor.textContent =
+    "@" + author;
+
+  window.scrollTo({
+    top:0,
+    behavior:"auto"
+  });
+
+  if(push){
+
+    const niceUrl =
+      BASE.replace(/\/$/,"") +
+      `/@${encodeURIComponent(author)}/${encodeURIComponent(permlink)}`;
+
+    history.pushState(
+      {
+        post:true,
+        author,
+        permlink
+      },
+      "",
+      niceUrl
+    );
+
+  }
+
+  ptitle.textContent = "Loading...";
+  pmeta.textContent = "";
+  pbody.innerHTML =
+    `<div class="loading">Fetching dari Hive...</div>`;
+
+  loadPost(author,permlink);
+}
+
+
+/* =========================================================
+   LOAD SINGLE POST
+========================================================= */
+
+async function loadPost(
+  author,
+  permlink
+){
+
+  try{
+
+    const body = {
+      jsonrpc:"2.0",
+      method:"condenser_api.get_content",
+      params:[
+        author,
+        permlink
+      ],
+      id:Date.now()
+    };
+
+    const results =
+      await Promise.any(
+        POST_ENDPOINTS.map(
+          endpoint =>
+            fetchTimeout(
+              endpoint,
+              body,
+              5000
+            )
+        )
+      );
+
+    const p = results.result;
+
+    if(
+      !p ||
+      !p.author
+    ){
+
+      throw new Error(
+        "Post tidak ditemukan"
+      );
+
+    }
+
+    /*
+      Jangan menimpa post yang sedang dibuka
+      jika user sudah pindah ke post lain.
+    */
+
+    if(
+      curAuthor !== author ||
+      curPermlink !== permlink
+    ){
+
+      return;
+
+    }
+
+    ptitle.textContent =
+      p.title || "(tanpa judul)";
+
+    const payout =
+      payoutValue(
+        p.pending_payout_value
+      );
+
+    const votes =
+      Array.isArray(p.active_votes)
+        ? p.active_votes.length
+        : 0;
+
+    pmeta.textContent =
+      `@${p.author} • ${ago(p.created)} • #${p.category || ""} • ♥ ${votes} • $${payout.toFixed(2)}`;
+
+    const content =
+      renderFullContent(
+        p.body || ""
+      );
+
+    pbody.innerHTML = `
+      ${content}
+
+      <hr style="
+        margin:24px 0;
+        border:0;
+        border-top:1px solid var(--border)
+      ">
+
+      <div style="
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap
+      ">
+
+        <a
+          href="https://peakd.com/@${encodeURIComponent(author)}/${encodeURIComponent(permlink)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="
+            border:1px solid var(--border);
+            padding:8px 14px;
+            border-radius:99px;
+            text-decoration:none;
+            font-weight:800;
+            font-size:12px;
+            color:var(--text)
+          "
+        >
+          PeakD ↗
+        </a>
+
+        <a
+          href="https://ecency.com/@${encodeURIComponent(author)}/${encodeURIComponent(permlink)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="
+            border:1px solid var(--border);
+            padding:8px 14px;
+            border-radius:99px;
+            text-decoration:none;
+            font-weight:800;
+            font-size:12px;
+            color:var(--text)
+          "
+        >
+          Ecency ↗
+        </a>
+
+      </div>
+    `;
+
+  }catch(e){
+
+    console.error(e);
+
+    if(
+      curAuthor === author &&
+      curPermlink === permlink
+    ){
+
+      pbody.innerHTML = `
+        <div class="error">
+          Gagal mengambil post.<br>
+          <small>${esc(e.message || "API error")}</small>
+        </div>
+      `;
+
+    }
+
+  }
+}
+
+
+/* =========================================================
+   SHOW FEED
+========================================================= */
+
+function showList(push = true){
+
+  listEl.style.display = "";
+  moreBtn.style.display = "";
+
+  postView.classList.remove("open");
+
+  brandBtn.style.display = "";
+  backBtn.style.display = "none";
+
+  headAuthor.style.display = "none";
+  shareBtn.style.display = "none";
+
+  sortEl.style.display = "";
+
+  curAuthor = "";
+  curPermlink = "";
+
+  if(push){
+
+    history.pushState(
+      {
+        feed:true
+      },
+      "",
+      BASE
+    );
+
+  }
+
+  window.scrollTo({
+    top:0,
+    behavior:"auto"
+  });
+}
+
+
+/* =========================================================
+   ROUTING
+========================================================= */
+
+function parsePostRoute(){
+
+  /*
+    pathname:
+    /@author/permlink
+    /repo/@author/permlink
+  */
+
+  const pathMatch =
+    location.pathname.match(
+      /@([^/]+)\/([^/?#]+)/
+    );
+
+  if(pathMatch){
+
+    return {
+      author:decodeURIComponent(pathMatch[1]),
+      permlink:decodeURIComponent(pathMatch[2])
+    };
+
+  }
+
+  /*
+    fallback hash:
+    #@author/permlink
+  */
+
+  const hashMatch =
+    location.hash.match(
+      /@([^/]+)\/([^/?#]+)/
+    );
+
+  if(hashMatch){
+
+    return {
+      author:decodeURIComponent(hashMatch[1]),
+      permlink:decodeURIComponent(hashMatch[2])
+    };
+
+  }
+
+  return null;
+}
+
+
+/* =========================================================
+   HISTORY BACK / FORWARD
+========================================================= */
+
+window.addEventListener(
+  "popstate",
+  event => {
+
+    const route =
+      parsePostRoute();
+
+    if(route){
+
+      openPost(
+        route.author,
+        route.permlink,
+        false
+      );
+
+    }else{
+
+      showList(false);
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   BUTTON EVENTS
+========================================================= */
+
+backBtn.addEventListener(
+  "click",
+  () => {
+
+    /*
+      Kalau ada history sebelumnya,
+      gunakan back agar URL/history tetap natural.
+    */
+
+    const route =
+      parsePostRoute();
+
+    if(route){
+
+      history.back();
+
+    }else{
+
+      showList(true);
+
+    }
+
+  }
+);
+
+
+brandBtn.addEventListener(
+  "click",
+  () => {
+
+    if(
+      parsePostRoute()
+    ){
+
+      history.pushState(
+        {feed:true},
+        "",
+        BASE
+      );
+
+    }
+
+    showList(false);
+
+  }
+);
+
+
+listEl.addEventListener(
+  "click",
+  event => {
+
+    const item =
+      event.target.closest(".item");
+
+    if(!item) return;
+
+    openPost(
+      item.dataset.a,
+      item.dataset.p,
+      true
+    );
+
+  }
+);
+
+
+/* =========================================================
+   SHARE
+========================================================= */
+
+shareBtn.addEventListener(
+  "click",
+  async () => {
+
+    const url = location.href;
+
+    if(navigator.share){
+
+      try{
+
+        await navigator.share({
+          title:ptitle.textContent,
+          url
+        });
+
+      }catch(e){
+
+        /*
+          User cancel share.
+        */
+
+      }
+
+    }else{
+
+      try{
+
+        await navigator.clipboard.writeText(url);
+
+        const old =
+          shareBtn.textContent;
+
+        shareBtn.textContent =
+          "Copied!";
+
+        setTimeout(
+          () => {
+            shareBtn.textContent = old;
+          },
+          1200
+        );
+
+      }catch(e){
+
+        prompt(
+          "Salin URL ini:",
+          url
+        );
+
+      }
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   RESET FEED
+========================================================= */
+
+async function reset(){
+
+  /*
+    Batalkan request lama secara logis.
+    Request fetch tetap berjalan di browser,
+    tetapi hasilnya akan diabaikan.
+  */
+
+  loadingToken++;
+
+  allPosts = [];
+  displayed = 0;
+
+  lastAuthor = "";
+  lastPermlink = "";
+
+  seen = new Set();
+
+  listEl.innerHTML =
+    `<div class="loading">Memuat feed Hive...</div>`;
+
+  updateLog();
+
+  await loadBatch(false);
+}
+
+
+/* =========================================================
+   SORT
+========================================================= */
+
+sortEl.addEventListener(
+  "change",
+  () => {
+
+    sort = sortEl.value;
+
+    reset();
+
+  }
+);
+
+
+/* =========================================================
+   MORE
+========================================================= */
+
+moreBtn.addEventListener(
+  "click",
+  async () => {
+
+    if(busy) return;
+
+    /*
+      Masih ada data yang sudah di-cache.
+    */
+
+    if(
+      displayed < allPosts.length
+    ){
+
+      render10();
+
+      return;
+
+    }
+
+    /*
+      Ambil batch baru.
+    */
+
+    await loadBatch(true);
+
+  }
+);
+
+
+/* =========================================================
+   INITIAL ROUTE
+========================================================= */
+
+(function initRoute(){
+
+  const route =
+    parsePostRoute();
+
+  if(route){
+
+    /*
+      Jangan load feed jika langsung membuka
+      URL sebuah post.
+    */
+
+    openPost(
+      route.author,
+      route.permlink,
+      false
+    );
+
+  }else{
+
+    /*
+      Normal feed.
+    */
+
+    reset();
+
+  }
+
+})();
+
+</script>
+
+</body>
+</html>
